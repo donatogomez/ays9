@@ -1,7 +1,0 @@
-JumpScaleAYS/AtYourServiceFactory.py
-JumpScaleAYS/__init__.py
-JumpScaleAYS.egg-info/PKG-INFO
-JumpScaleAYS.egg-info/SOURCES.txt
-JumpScaleAYS.egg-info/dependency_links.txt
-JumpScaleAYS.egg-info/requires.txt
-JumpScaleAYS.egg-info/top_level.txt
