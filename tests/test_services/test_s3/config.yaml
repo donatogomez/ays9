@@ -1,0 +1,18 @@
+doc:
+  property:
+  - s3: ''
+  - result: ''
+  - scality: ''
+links:
+  consume:
+  - argname: s3
+    auto: false
+    max: 100
+    min: 0
+    role: s3
+  - argname: scality
+    auto: false
+    max: 100
+    min: 0
+    role: scality
+recurring: []

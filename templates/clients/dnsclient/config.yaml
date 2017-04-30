@@ -1,0 +1,15 @@
+doc:
+  property:
+  - password: ''
+  - login: ''
+  - port: ''
+  - addr: ''
+  - sshkey: ''
+links:
+  consume:
+  - argname: sshkey
+    auto: false
+    max: '1'
+    min: '1'
+    role: sshkey
+recurring: []

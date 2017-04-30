@@ -1,0 +1,26 @@
+doc:
+  property:
+  - fs: ''
+  - path: ''
+  - snapshot: ''
+  - os: ''
+  - pools: ''
+  - replicate: ''
+  - monitor: ''
+links:
+  consume:
+  - argname: fs
+    auto: true
+    max: 100
+    min: '1'
+    role: fs.btrfs
+  - argname: pools
+    auto: true
+    max: '50'
+    min: '0'
+    role: storage_pool
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

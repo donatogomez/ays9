@@ -1,0 +1,11 @@
+doc:
+  property:
+  - description: ''
+  - location: ''
+  - datacenter: ''
+links:
+  parent:
+    auto: false
+    optional: false
+    role: datacenter
+recurring: []

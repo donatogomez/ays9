@@ -1,0 +1,24 @@
+doc:
+  property:
+  - ipAddr: ''
+  - openvswitch: ''
+  - netmask: ''
+  - dhcpRangeStop: ''
+  - gateway: ''
+  - dhcpEnable: ''
+  - os: ''
+  - name: ''
+  - masquerading: ''
+  - dhcpRangeStart: ''
+links:
+  consume:
+  - argname: openvswitch
+    auto: false
+    max: '1'
+    min: '1'
+    role: openvswitch
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

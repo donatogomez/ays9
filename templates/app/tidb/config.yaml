@@ -1,0 +1,10 @@
+doc:
+  property:
+  - os: ''
+  - clusterId: ''
+links:
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

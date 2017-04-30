@@ -1,0 +1,21 @@
+doc:
+  property:
+  - dnsclient: ''
+  - domain: ''
+  - cnameRecords: ''
+  - aRecords: ''
+  - node: ''
+  - ttl: ''
+links:
+  consume:
+  - argname: dnsclient
+    auto: false
+    max: 100
+    min: 0
+    role: dnsclient
+  - argname: node
+    auto: false
+    max: 100
+    min: '0'
+    role: node
+recurring: []

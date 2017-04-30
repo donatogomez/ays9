@@ -1,0 +1,24 @@
+doc:
+  property:
+  - oauthHost: ''
+  - botToken: ''
+  - oauthItsyouonlinehost: ''
+  - g8: ''
+  - oauthClient: ''
+  - oauthPort: ''
+  - os: ''
+  - dnsSshkey: ''
+  - oauthSecret: ''
+  - oauthRedirect: ''
+links:
+  consume:
+  - argname: dnsSshkey
+    auto: false
+    max: '1'
+    min: '1'
+    role: sshkey
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

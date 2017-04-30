@@ -1,0 +1,11 @@
+
+sshkey__main:
+    key.path: '/root/.ssh/id_rsa'
+
+node.packet.net__kvm:
+    client: 'main'
+    project.name: 'fake_project_name'
+    plan.type: 'Type 0'
+    device.os: 'Ubuntu 16.04 LTS'
+    location: 'Parsippany'
+    sshkey: 'main'

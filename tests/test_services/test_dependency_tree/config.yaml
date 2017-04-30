@@ -1,0 +1,18 @@
+doc:
+  property:
+  - description: ''
+  - result: ''
+  - vdcfarm: ''
+  - sshkeys: ''
+links:
+  consume:
+  - argname: sshkeys
+    auto: false
+    max: '3'
+    min: '1'
+    role: sshkey
+  parent:
+    auto: true
+    optional: false
+    role: vdcfarm
+recurring: []

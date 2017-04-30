@@ -1,0 +1,16 @@
+doc:
+  property:
+  - networks: ''
+  - os: ''
+links:
+  consume:
+  - argname: networks
+    auto: true
+    max: '50'
+    min: '1'
+    role: network.zerotier
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

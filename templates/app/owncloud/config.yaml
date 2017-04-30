@@ -1,0 +1,22 @@
+doc:
+  property:
+  - owncloudAdminPassword: ''
+  - tidbhost: ''
+  - tidbpassword: ''
+  - tidb: ''
+  - os: ''
+  - sitename: ''
+  - tidbuser: ''
+  - owncloudAdminUser: ''
+links:
+  consume:
+  - argname: tidb
+    auto: false
+    max: 100
+    min: 0
+    role: tidb
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

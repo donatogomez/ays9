@@ -1,0 +1,11 @@
+doc:
+  property:
+  - vdc: ''
+  - image: ''
+  - result: ''
+links:
+  parent:
+    auto: false
+    optional: false
+    role: vdc
+recurring: []

@@ -1,0 +1,15 @@
+doc:
+  property:
+  - os: ''
+  - threshold: Size in mega before the autoscale should add new disk
+  - mount: ''
+  - incrementSize: Incremental disk size
+links:
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring:
+- action: autoscale
+  log: true
+  period: 1m

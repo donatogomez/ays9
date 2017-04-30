@@ -1,0 +1,27 @@
+### This blueprint is not tested yet, please don't use
+g8client__main:
+    url: '{environment}'
+    login: '{username}'
+    password: '{password}'
+    account: '{account}'
+
+vdc__{random_vdc}:
+    g8client: 'main'
+    location: '{location}'
+
+blueowncloud__bc:
+    vdc: '{random_vdc}'
+    datadisks:
+       - 1000
+       - 1000
+    hostprefix: 'testcloud'
+
+# 'QA SERVICE' (THE TEMPLATE SHOULD HAS THIS LINE)
+test_owncloud_install__tc:
+    blueowncloud: 'bc'
+    owncloud: 'own1'
+
+actions:
+    - action: 'install'
+    - action: 'test'
+      actor: 'test_owncloud_install'

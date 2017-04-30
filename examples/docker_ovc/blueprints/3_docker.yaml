@@ -1,0 +1,7 @@
+# create the docker, specifying what image to use
+node.docker__docker:
+        image: 'ubuntu/xenial'
+        hostname: demo
+        os: demo
+        ports:
+          -   '2210:22'

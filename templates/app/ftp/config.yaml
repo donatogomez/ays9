@@ -1,0 +1,22 @@
+doc:
+  property:
+  - fs: ''
+  - os: ''
+  - spaces: ''
+links:
+  consume:
+  - argname: fs
+    auto: true
+    max: 100
+    min: '1'
+    role: fs
+  - argname: spaces
+    auto: true
+    max: '50'
+    min: '1'
+    role: ftp_space
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

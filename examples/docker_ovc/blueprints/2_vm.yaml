@@ -1,0 +1,26 @@
+# create/specify which virtual data center to use
+vdc__vdcname:
+    description: 'vdc for demo'
+    g8client: 'env'
+    account: 'fake_login'
+    location: 'fake_location'
+
+# create an sshkey to later access your vm
+sshkey__main:
+
+# create the vm.
+# expose ports 22. Map it to 2210.
+# authorize sshkey created on the vm
+node.ovc__demo:
+    bootdisk.size: 50
+    memory: 2
+    os.image: 'Ubuntu 16.04 x64'
+    ports:
+        - '22:2210'
+    sshkey: 'main'
+
+
+# an os layer to get access to the docker
+os.ssh.ubuntu__demo:
+     sshkey: main
+     node: demo

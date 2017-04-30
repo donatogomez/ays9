@@ -1,0 +1,47 @@
+
+
+links:
+    parent:
+        role: something
+        auto: False
+        #if not same as role name
+        argname: something
+
+    consume:
+        -   role: somethinconsume
+            min: 1
+            max: 1
+            auto: False
+            #if not same as role name
+            argname: something
+        -   role: somethinconsumeb
+            #default is min=max=1, argname same as role
+
+recurring:
+    -   action: monitor
+        period: 30s
+        log: True
+
+    -   action: dosomething
+        period: 1m
+        log: True
+
+events:
+    -   channel: telegram
+        command: install_mynode
+        actions:
+            - install
+            - actionX
+        log: True
+        role: node.ssh
+        service: mynode
+        tags: color:red
+        secrets:
+            - 1234
+    -   command: stop
+        actions: stop,kill
+        log: False
+        secrets:  1234
+    -   command: issue_delete
+        role: issue
+        instance: myissue

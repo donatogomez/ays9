@@ -1,0 +1,12 @@
+doc:
+  property:
+  - vdcfarm: ''
+  - listAttr: ''
+  - strAttr: ''
+  - result: ''
+links:
+  parent:
+    auto: true
+    optional: false
+    role: vdcfarm
+recurring: []

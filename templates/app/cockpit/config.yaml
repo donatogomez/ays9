@@ -1,0 +1,27 @@
+doc:
+  property:
+  - oauthClientSecret: ''
+  - botClient: ''
+  - oauthJwtKey: ''
+  - oauthClientId: ''
+  - dnsSshkey: ''
+  - caddyStagging: ''
+  - hostNode: ''
+  - flist: ''
+  - domain: ''
+  - botSecret: ''
+  - caddyEmail: ''
+  - oauthOrganization: ''
+links:
+  consume:
+  - argname: dnsSshkey
+    auto: false
+    max: '1'
+    min: '1'
+    role: sshkey
+  - argname: hostNode
+    auto: false
+    max: '1'
+    min: '1'
+    role: node
+recurring: []

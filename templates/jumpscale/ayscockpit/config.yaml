@@ -1,0 +1,36 @@
+doc:
+  property:
+  - oauthClientSecret: ''
+  - fs: ''
+  - oauthClientId: ''
+  - apiPort: ''
+  - os: ''
+  - portal: ''
+  - oauthJwtKey: ''
+  - redis: ''
+  - oauthRedirectUrl: ''
+  - domain: ''
+  - apiHost: ''
+  - oauthOrganization: ''
+links:
+  consume:
+  - argname: fs
+    auto: false
+    max: 100
+    min: '0'
+    role: fs
+  - argname: portal
+    auto: false
+    max: '1'
+    min: '1'
+    role: portal
+  - argname: redis
+    auto: false
+    max: '1'
+    min: '1'
+    role: redis
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

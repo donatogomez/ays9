@@ -1,0 +1,14 @@
+doc:
+  property:
+  - domain: ''
+  - keyAccess: ''
+  - storageMeta: ''
+  - os: ''
+  - storageData: ''
+  - keySecret: ''
+links:
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

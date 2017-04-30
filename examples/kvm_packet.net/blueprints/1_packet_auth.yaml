@@ -1,0 +1,2 @@
+packetnet_client__main:
+    token: 'fake_token'

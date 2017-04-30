@@ -1,0 +1,21 @@
+doc:
+  property:
+  - storePassword: ''
+  - mountFlist: ''
+  - backendPush: ''
+  - mountNamespace: ''
+  - mountTrim: ''
+  - backendStoreRsa: ''
+  - backendCleanupOld: ''
+  - storeLogin: ''
+  - mountMountpoint: ''
+  - backendPath: ''
+  - backendEncrypted: ''
+  - backendCleanupCron: ''
+  - storeUrl: ''
+  - mountTrimbase: ''
+  - backendUserRsa: ''
+  - backendUpload: ''
+  - backendNamespace: ''
+  - mountMode: ''
+recurring: []

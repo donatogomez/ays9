@@ -1,0 +1,11 @@
+doc:
+  property:
+  - os: ''
+  - url: ''
+  - overwrite: ''
+links:
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

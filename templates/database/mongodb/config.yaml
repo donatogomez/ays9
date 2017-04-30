@@ -1,0 +1,16 @@
+doc:
+  property:
+  - os: ''
+  - fs: ''
+links:
+  consume:
+  - argname: fs
+    auto: false
+    max: 100
+    min: '0'
+    role: fs
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

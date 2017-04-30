@@ -1,0 +1,24 @@
+doc:
+  property:
+  - g8client: ''
+  - vdc: ''
+  - uservdc: ''
+  - result: ''
+links:
+  consume:
+  - argname: g8client
+    auto: false
+    max: 100
+    min: 0
+    role: g8client
+  - argname: vdc
+    auto: false
+    max: 100
+    min: 0
+    role: vdc
+  - argname: uservdc
+    auto: false
+    max: 100
+    min: 0
+    role: uservdc
+recurring: []

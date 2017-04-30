@@ -1,0 +1,26 @@
+doc:
+  property:
+  - stagging: ''
+  - fs: ''
+  - caddyProxy: ''
+  - email: ''
+  - gzip: ''
+  - os: ''
+  - hostname: ''
+links:
+  consume:
+  - argname: fs
+    auto: false
+    max: 100
+    min: '0'
+    role: fs
+  - argname: caddyProxy
+    auto: false
+    max: 100
+    min: 0
+    role: caddy_proxy
+  parent:
+    auto: false
+    optional: false
+    role: os
+recurring: []

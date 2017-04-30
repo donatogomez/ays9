@@ -1,0 +1,11 @@
+doc:
+  property:
+  - without: ''
+  - src: ''
+  - headerDownstream: ''
+  - transparent: ''
+  - dst: ''
+  - failTimeout: ''
+  - headerUpstream: ''
+  - maxFails: ''
+recurring: []

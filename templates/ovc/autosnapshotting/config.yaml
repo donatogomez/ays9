@@ -1,0 +1,14 @@
+doc:
+  property:
+  - endDate: ''
+  - cleanupInterval: ''
+  - retention: ''
+  - vdc: ''
+  - startDate: ''
+  - snapshotInterval: ''
+links:
+  parent:
+    auto: false
+    optional: false
+    role: vdc
+recurring: []

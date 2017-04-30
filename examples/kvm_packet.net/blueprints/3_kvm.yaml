@@ -1,0 +1,39 @@
+kvm__main:
+    os: 'kvm'
+
+openvswitch__main:
+    os: 'kvm'
+
+network.kvm__main:
+    os: 'kvm'
+    openvswitch: 'main'
+
+    name: 'kvmnet1'
+    ip.addr: '10.0.0.1'
+    netmask: 24
+    gateway: ''
+
+    masquerading: true
+
+    dhcp.enable: true
+    dhcp.range.start: 10.0.0.10
+    dhcp.range.stop: 10.0.0.50
+
+storagepool.kvm__main:
+    os: 'kvm'
+    name: 'vms'
+
+image_os__ubuntu:
+    os: 'kvm'
+    url: 'https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-uefi1.img'
+    overwrite: True
+
+node.kvm__test1:
+    os: 'kvm'
+    image: 'ubuntu'
+    disks:
+        - 10
+    nics:
+        - 'main'
+    memory: 256
+    cpu: 1

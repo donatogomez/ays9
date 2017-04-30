@@ -1,0 +1,9 @@
+redis
+colorlog
+pytoml
+ipython
+colored_traceback
+pystache
+libtmux
+httplib2
+netaddr

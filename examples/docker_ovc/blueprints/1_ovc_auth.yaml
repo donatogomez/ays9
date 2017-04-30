@@ -1,0 +1,4 @@
+g8client__env:
+    url: 'gig.demo.greenitglobe.com'
+    login: 'fake_login'
+    password: 'fake_password'

@@ -1,0 +1,28 @@
+g8client__main:
+    url: '{environment}'
+    login: '{username}'
+    password: '{password}'
+    account: '{account}'
+
+vdc__{random_vdc}:
+    g8client: 'main'
+    location: '{location}'
+
+disk.ovc__disk1:
+  size: 1000
+
+s3__s3vm:
+    vdc: '{random_vdc}'
+    disk:
+      - 'disk1'
+    hostprefix: 's3test'
+
+# 'QA SERVICE' (THE TEMPLATE SHOULD HAS THIS LINE)
+test_s3__ts:
+    s3: 's3vm'
+    scality: app
+
+actions:
+  - action: 'install'
+  - action: 'test'
+    actor: 'test_s3'

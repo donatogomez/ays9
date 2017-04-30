@@ -1,0 +1,30 @@
+doc:
+  property:
+  - cpu: ''
+  - disks: ''
+  - ipPrivate: ''
+  - sshPassword: ''
+  - ipPublic: ''
+  - nics: ''
+  - os: ''
+  - sshLogin: ''
+  - image: ''
+  - memory: ''
+links:
+  consume:
+  - argname: nics
+    auto: false
+    max: 100
+    min: 1
+    role: network
+  - argname: image
+    auto: false
+    max: 1
+    min: 1
+    role: image_os
+  parent:
+    auto: false
+    optional: false
+    role: os
+    argname: os
+recurring: []
