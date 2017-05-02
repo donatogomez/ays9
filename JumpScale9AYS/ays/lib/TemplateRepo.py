@@ -1,5 +1,5 @@
 from js9 import j
-from .lib.ActorTemplate import ActorTemplate
+from .ActorTemplate import ActorTemplate
 import asyncio
 
 

@@ -1,7 +1,7 @@
 from js9 import j
-from .lib.models.ActorServiceBaseModel import ActorServiceBaseModel
-from .lib.Service import Service
-from .lib import model_capnp as ModelCapnp
+from JumpScale9AYS.ays.lib.models.ActorServiceBaseModel import ActorServiceBaseModel
+from JumpScale9AYS.ays.lib.Service import Service
+from JumpScale9AYS.ays.lib import model_capnp as ModelCapnp
 
 VALID_STATES = ['new', 'installing', 'ok', 'error', 'disabled', 'changed']
 

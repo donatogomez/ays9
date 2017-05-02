@@ -1,6 +1,7 @@
 from js9 import j
-from .lib.Recurring import RecurringTask
+from .Recurring import RecurringTask
 import asyncio
+
 
 class Service:
 
@@ -12,7 +13,7 @@ class Service:
         self._schema = None
         self._path = ""
         self._loop = loop or asyncio.get_event_loop()
-        self._recurring_tasks = {} # for recurring jobs
+        self._recurring_tasks = {}  # for recurring jobs
 
         self.aysrepo = aysrepo
         self.logger = j.logger.get('j.core.atyourservice.service')
@@ -155,7 +156,8 @@ class Service:
                     service="%s!%s" % (self.model.role, self.model.dbobj.name)))
 
         if errors:
-            msg = "The arguments passed to the service %s|%s contains the following errors: \n" % (self.model.role, self.model.dbobj.name) + "\n".join(errors)
+            msg = "The arguments passed to the service %s|%s contains the following errors: \n" % (
+                self.model.role, self.model.dbobj.name) + "\n".join(errors)
             msg += '\nDataSchema : {}'.format(self.model.dbobj.dataSchema)
             raise j.exceptions.Input(msg)
 
@@ -651,7 +653,6 @@ class Service:
             # save period into actionCode model
             action_model.period = period
             self._ensure_recurring()
-
 
         if not force and action_model.state == 'ok' and action not in ['start', 'stop']:
             self.logger.info("action %s already in ok state, don't schedule again" % action_model.name)

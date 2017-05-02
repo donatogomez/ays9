@@ -3,7 +3,7 @@ from .JobModel import JobModel
 
 import capnp
 from JumpScale9AYS.jobcontroller.models import model_job_capnp as ModelCapnp
-from JumpScale.data.capnp.ModelBase import ModelBaseCollection
+from JumpScale9.data.capnp.ModelBase import ModelBaseCollection
 
 
 class JobsCollection(ModelBaseCollection):

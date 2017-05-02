@@ -1,6 +1,6 @@
 from js9 import j
 from .SourceLoader import SourceLoader
-from JumpScale.core.errorhandling.ErrorConditionObject import ErrorConditionObject
+from JumpScale9.errorhandling.ErrorConditionObject import ErrorConditionObject
 import colored_traceback
 import pygments.lexers
 import cProfile
@@ -50,7 +50,8 @@ def _execute_cb(job, future):
         job._processError(eco)
 
         if exception:
-            tb_lines = [line.rstrip('\n') for line in traceback.format_exception(exception.__class__, exception, exception.__traceback__)]
+            tb_lines = [line.rstrip('\n') for line in traceback.format_exception(
+                exception.__class__, exception, exception.__traceback__)]
             job.logger.error('\n'.join(tb_lines))
     else:
         job.state = 'ok'
@@ -63,6 +64,7 @@ def _execute_cb(job, future):
         job.logger.info("job {} done sucessfuly".format(str(job)))
 
     job.save()
+
 
 @contextmanager
 def generate_profile(job):
@@ -84,6 +86,7 @@ def generate_profile(job):
             job.model.dbobj.profileData = j.sal.fs.fileGetBinaryContents(stat_file)
             j.sal.fs.remove(stat_file)
 
+
 class JobHandler(logging.Handler):
     def __init__(self, job_model, level=logging.NOTSET):
         super().__init__(level=level)
@@ -96,7 +99,8 @@ class JobHandler(logging.Handler):
             category = 'alert'
         else:
             category = 'errormsg'
-        self._job_model.log(msg=record.getMessage(), level=record.levelno, category=category, epoch=int(record.created), tags='')
+        self._job_model.log(msg=record.getMessage(), level=record.levelno,
+                            category=category, epoch=int(record.created), tags='')
 
 
 class Job:
@@ -165,7 +169,8 @@ class Job:
                 try:
                     self._service = repo.serviceGetByKey(self.model.dbobj.serviceKey)
                 except j.exceptions.NotFound:
-                    self.logger.warning("job {} tried to access a non existing service {}".format(self,self.model.dbobj.serviceKey ))
+                    self.logger.warning("job {} tried to access a non existing service {}".format(
+                        self, self.model.dbobj.serviceKey))
                     return None
         return self._service
 
@@ -251,7 +256,7 @@ class Job:
         # for now use default ThreadPoolExecutor
         if self.model.dbobj.debug is False:
             self.model.dbobj.debug = self.sourceLoader.source.find('ipdb') != -1 or \
-                                     self.sourceLoader.source.find('IPython') != -1
+                self.sourceLoader.source.find('IPython') != -1
 
         loop = asyncio.get_event_loop()
         self._future = loop.run_in_executor(None, self.method, self)
@@ -273,7 +278,6 @@ class Job:
             self._future.remove_done_callback(_execute_cb)
             self._future.cancel()
             self.logger.info("job {} cancelled".format(self))
-
 
     def str_error(self, error):
         out = 'Error of %s:' % str(self)

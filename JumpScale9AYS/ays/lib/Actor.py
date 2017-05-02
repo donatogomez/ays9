@@ -1,8 +1,8 @@
 from js9 import j
-from .lib.Service import Service
+from .Service import Service
 import capnp
 import msgpack
-from .lib import model_capnp as ModelCapnp
+from JumpScale9AYS.ays.lib import model_capnp as ModelCapnp
 
 
 class Actor():

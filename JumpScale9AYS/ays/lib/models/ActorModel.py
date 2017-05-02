@@ -2,8 +2,8 @@ from collections import OrderedDict
 
 import msgpack
 from js9 import j
-from .lib.models.ActorServiceBaseModel import ActorServiceBaseModel
-from .lib.Actor import Actor
+from JumpScale9AYS.ays.lib.models.ActorServiceBaseModel import ActorServiceBaseModel
+from JumpScale9AYS.ays.lib.Actor import Actor
 
 
 class ActorModel(ActorServiceBaseModel):
@@ -76,9 +76,8 @@ class ActorModel(ActorServiceBaseModel):
         """
 
         o = self.collection.capnp_schema.ActorPointer.new_message(actorRole=role, minServices=int(min), maxServices=int(max),
-                                                        auto=bool(auto), optional=bool(optional), argname=argname)
+                                                                  auto=bool(auto), optional=bool(optional), argname=argname)
         self.addSubItem('producers', o)
-
 
     @property
     def dictFiltered(self):

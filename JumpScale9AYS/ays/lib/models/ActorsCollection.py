@@ -1,8 +1,8 @@
 from js9 import j
-from JumpScale.data.capnp.ModelBase import ModelBaseCollection
+from JumpScale9.data.capnp.ModelBase import ModelBaseCollection
 import capnp
-from .lib import model_capnp as ModelCapnp
-from .lib.models.ActorModel import ActorModel
+from JumpScale9AYS.ays.lib import model_capnp as ModelCapnp
+from JumpScale9AYS.ays.lib.models.ActorModel import ActorModel
 
 
 class ActorsCollection(ModelBaseCollection):

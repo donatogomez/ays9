@@ -1,14 +1,14 @@
 from js9 import j
-from .lib.Actor import Actor
-from .lib.Service import Service
-from .lib.Blueprint import Blueprint
-from .lib.models.ActorsCollection import ActorsCollection
-from .lib.models.ServicesCollection import ServicesCollection
-from .lib.AtYourServiceDependencies import build_nodes
-from .lib.AtYourServiceDependencies import create_graphs
-from .lib.AtYourServiceDependencies import get_task_batches
-from .lib.AtYourServiceDependencies import create_job
-from .lib.RunScheduler import RunScheduler
+from .Actor import Actor
+from .Service import Service
+from .Blueprint import Blueprint
+from .models.ActorsCollection import ActorsCollection
+from .models.ServicesCollection import ServicesCollection
+from .AtYourServiceDependencies import build_nodes
+from .AtYourServiceDependencies import create_graphs
+from .AtYourServiceDependencies import get_task_batches
+from .AtYourServiceDependencies import create_job
+from .RunScheduler import RunScheduler
 
 import asyncio
 from collections import namedtuple
