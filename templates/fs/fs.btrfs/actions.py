@@ -11,9 +11,9 @@ def init_actions_(service, args):
 
 def install(job):
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
     # List available devices
-    code, out, err = cuisine.core.run('lsblk -J  -o NAME,FSTYPE,MOUNTPOINT')
+    code, out, err = prefab.core.run('lsblk -J  -o NAME,FSTYPE,MOUNTPOINT')
     if code != 0:
         raise RuntimeError('failed to list bulk devices: %s' % err)
 
@@ -32,20 +32,20 @@ def install(job):
     if master['fstype'] != 'btrfs':
         # creating the filesystem on all of the devices.
         cmd = 'mkfs.btrfs -f %s' % ' '.join(map(lambda e: '/dev/%s' % e['name'], btrfs_devices))
-        code, out, err = cuisine.core.run(cuisine.core.sudo_cmd(cmd))
+        code, out, err = prefab.core.run(prefab.core.sudo_cmd(cmd))
         if code != 0:
             raise RuntimeError('failed to create filesystem: %s' % err)
 
     if master['mountpoint'] is None:
-        cuisine.core.dir_ensure(service.model.data.mount)
+        prefab.core.dir_ensure(service.model.data.mount)
         cmd = 'mount /dev/%s %s' % (master['name'], service.model.data.mount)
-        code, out, err = cuisine.core.run(cuisine.core.sudo_cmd(cmd))
+        code, out, err = prefab.core.run(prefab.core.sudo_cmd(cmd))
         if code != 0:
             raise RuntimeError('failed to mount device: %s' % err)
 
     # Last thing is to check that all devices are part of the filesystem
     # in case we support hot plugging of disks in the future.
-    code, out, err = cuisine.core.run('btrfs filesystem show /dev/%s' % master['name'])
+    code, out, err = prefab.core.run('btrfs filesystem show /dev/%s' % master['name'])
     if code != 0:
         raise RuntimeError('failed to inspect filesystem on device: %s' % err)
 
@@ -56,7 +56,7 @@ def install(job):
         if device['name'] not in fs_devices:
             # add device to filesystem
             cmd = 'btrfs device add -f /dev/%s %s' % (device['name'], service.model.data.mount)
-            code, _, err = cuisine.core.run(cmd)
+            code, _, err = prefab.core.run(cmd)
             if code != 0:
                 raise RuntimeError('failed to add device %s to fs: %s' % (
                     device['name'],
@@ -68,8 +68,8 @@ def autoscale(job):
     service = job.service
     repo = service.aysrepo
     exc = service.executor
-    cuisine = exc.cuisine
-    code, out, err = cuisine.core.run('btrfs filesystem  usage -b {}'.format(service.model.data.mount), die=False)
+    prefab = exc.prefab
+    code, out, err = prefab.core.run('btrfs filesystem  usage -b {}'.format(service.model.data.mount), die=False)
     if code != 0:
         raise RuntimeError('failed to get device usage: %s', err)
     # get free space.
@@ -116,6 +116,6 @@ def autoscale(job):
         if disk is None:
             raise RuntimeError('failed to find disk service instance')
 
-        rc, out, err = cuisine.core.run("btrfs device add /dev/{devicename} {mountpoint}".format(devicename=disk.model.data.devicename, mountpoint=service.model.data.mount))
+        rc, out, err = prefab.core.run("btrfs device add /dev/{devicename} {mountpoint}".format(devicename=disk.model.data.devicename, mountpoint=service.model.data.mount))
         if rc != 0:
             raise RuntimeError("Couldn't add device to /data")

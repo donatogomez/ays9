@@ -37,29 +37,29 @@ def install(job):
         }
     }
 
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
 
     base = j.sal.fs.joinPaths('/var', 'dockers', service.name)
-    cuisine.core.dir_ensure(base)
-    cuisine.package.mdupdate()
-    cuisine.package.ensure('python3-pip')
-    cuisine.development.pip.install('docker-compose')
-    cuisine.core.file_write(
+    prefab.core.dir_ensure(base)
+    prefab.package.mdupdate()
+    prefab.package.ensure('python3-pip')
+    prefab.development.pip.install('docker-compose')
+    prefab.core.file_write(
         j.sal.fs.joinPaths(base, 'docker-compose.yml'),
         j.data.serializer.yaml.dumps(compose)
     )
 
-    code, _, err = cuisine.core.run('cd {} && docker-compose up -d'.format(base))
+    code, _, err = prefab.core.run('cd {} && docker-compose up -d'.format(base))
     if code != 0:
         raise RuntimeError('failed to provision docker container: %s' % err)
 
-    code, docker_id, err = cuisine.core.run('cd {} && docker-compose ps -q'.format(base))
+    code, docker_id, err = prefab.core.run('cd {} && docker-compose ps -q'.format(base))
     if code != 0:
         raise RuntimeError('failed to get the container id: %s' % err)
     service.model.data.id = docker_id
 
     # get the ipaddress and ports
-    code, inspected, err = cuisine.core.run('docker inspect {id}'.format(id=docker_id), showout=False)
+    code, inspected, err = prefab.core.run('docker inspect {id}'.format(id=docker_id), showout=False)
     if code != 0:
         raise RuntimeError('failed to inspect docker %s: %s' % (service.name, err))
 
@@ -99,16 +99,16 @@ def install(job):
 
 def start(job):
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
 
     docker_id = service.model.data.id
     if docker_id is None or docker_id == '':
         raise j.exceptions.RuntimeError('docker id is not known')
 
-    cuisine.core.run('docker start {id}'.format(id=docker_id))
+    prefab.core.run('docker start {id}'.format(id=docker_id))
 
      # get the ipaddress and ports
-    code, inspected, err = cuisine.core.run('docker inspect {id}'.format(id=docker_id), showout=False)
+    code, inspected, err = prefab.core.run('docker inspect {id}'.format(id=docker_id), showout=False)
     if code != 0:
         raise RuntimeError('failed to inspect docker %s: %s' % (service.name, err))
 
@@ -134,24 +134,24 @@ def start(job):
 
 def stop(job):
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
 
     docker_id = service.model.data.id
     if docker_id is None or docker_id == '':
         raise j.exceptions.RuntimeError('docker id is not known')
 
-    cuisine.core.run('docker stop {id}'.format(id=docker_id))
+    prefab.core.run('docker stop {id}'.format(id=docker_id))
 
 
 def uninstall(job):
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
 
     docker_id = service.model.data.id
     if docker_id is None or docker_id == '':
         raise j.exceptions.RuntimeError('docker id is not known')
 
-    cuisine.core.run('docker rm -f {id}'.format(id=docker_id))
+    prefab.core.run('docker rm -f {id}'.format(id=docker_id))
 
     service.model.data.id = ''
     service.model.data.ipPrivate = ''

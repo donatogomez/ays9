@@ -11,14 +11,14 @@ def install(job):
     Installing ftpserver
     """
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
     ftp_path = '/mnt/storage/'
-    if not cuisine.core.isLinux:
+    if not prefab.core.isLinux:
         raise RuntimeError('unfortunetly support is available for linux systems only.')
-    cuisine.core.sudomode = True
-    cuisine.package.update()
-    cuisine.development.python.install()
-    cuisine.development.pip.ensure()
+    prefab.core.sudomode = True
+    prefab.package.update()
+    prefab.development.python.install()
+    prefab.development.pip.ensure()
     config = {}
     for space in service.producers['ftp_space']:
         if space.model.data.path.startswith('/mnt/storage/'):
@@ -31,21 +31,21 @@ def install(job):
             username, passwd = user.split(":")
             config[path][username] = [passwd, space.model.data.permission]
     config_yaml = j.data.serializer.yaml.dumps(config)
-    cuisine.apps.pyftpserver.install(root=ftp_path, config=config_yaml)
-    cuisine.apps.pyftpserver.start()
+    prefab.apps.pyftpserver.install(root=ftp_path, config=config_yaml)
+    prefab.apps.pyftpserver.start()
 
 def start(job):
     """
     start ftp server
     """
     service = job.service
-    cuisine = service.executor.cuisine
-    cuisine.apps.pyftpserver.start()
+    prefab = service.executor.prefab
+    prefab.apps.pyftpserver.start()
 
 def stop(job):
     """
     stop ftp server
     """
     service = job.service
-    cuisine = service.executor.cuisine
-    cuisine.apps.pyftpserver.stop()
+    prefab = service.executor.prefab
+    prefab.apps.pyftpserver.stop()

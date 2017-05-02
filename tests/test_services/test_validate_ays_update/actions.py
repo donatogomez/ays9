@@ -55,9 +55,9 @@ def test(job):
         			failures.append("Unexpected state [%s] of action [processChange] for service[%s!%s]. Expected [%s]" % (action_state, 
         				actor, service_name, expected_process_change_action_before_update))
 
-        job.service.executor.cuisine.core.run(replace_cmd)
+        job.service.executor.prefab.core.run(replace_cmd)
         j.sal.fs.changeDir(repo_path)
-        job.service.executor.cuisine.core.run(ays_update_cmd)
+        job.service.executor.prefab.core.run(ays_update_cmd)
 
         for actor in actors:
         	srv = repo.servicesFind(name=service_name, actor=actor)
@@ -78,6 +78,6 @@ def test(job):
         job.service.save()
         j.sal.fs.changeDir(cwd)
         replace_cmd = 'sed -i s/%s/%s/g %s' % (replacement_str, original_str, bp_path)
-        job.service.executor.cuisine.core.run(replace_cmd)
+        job.service.executor.prefab.core.run(replace_cmd)
         for repo in repos:
             repo.destroy()

@@ -1,10 +1,10 @@
 
 def install(job):
     service = job.service
-    cuisine = service.executor.cuisine
-    cuisine.core.run("js 'j'", profile=True)
+    prefab = service.executor.prefab
+    prefab.core.run("js 'j'", profile=True)
 
-    cfg = cuisine.core.file_read('$TEMPLATEDIR/cfg/portal/config.hrd')
+    cfg = prefab.core.file_read('$TEMPLATEDIR/cfg/portal/config.hrd')
     cfg = j.data.hrd.get(content=cfg, prefixWithName=False)
 
     # configure portal basics
@@ -48,26 +48,26 @@ def install(job):
         cfg.set('param.cfg.token_url', service.model.data.oauthTokenUrl)
 
 
-    cuisine.core.file_write('$JSCFGDIR/portals/main/config.hrd', str(cfg))
+    prefab.core.file_write('$JSCFGDIR/portals/main/config.hrd', str(cfg))
 
-    cuisine.core.dir_ensure('$JSCFGDIR/portals')
-    if not cuisine.core.file_exists('$JSAPPSDIR/portals/main/base/AYS81'):
-        cuisine.core.file_link('$JSCFGDIR/github/jumpscale/jumpscale_portal8/apps/portalbase/AYS81', '$JSAPPSDIR/portals/main/base/AYS81')
+    prefab.core.dir_ensure('$JSCFGDIR/portals')
+    if not prefab.core.file_exists('$JSAPPSDIR/portals/main/base/AYS81'):
+        prefab.core.file_link('$JSCFGDIR/github/jumpscale/jumpscale_portal8/apps/portalbase/AYS81', '$JSAPPSDIR/portals/main/base/AYS81')
     # make sure system.yaml exists at this step
     # change codedir path in system.yaml to be /optvar/code
     dir_paths = {
-        'CODEDIR': cuisine.core.replace('$VARDIR/code'),
-        'JSBASE': cuisine.core.dir_paths['base'],
-        'CFGDIR': cuisine.core.dir_paths['cfgDir'],
-        'DATADIR': cuisine.core.replace('$VARDIR/data/'),
+        'CODEDIR': prefab.core.replace('$VARDIR/code'),
+        'JSBASE': prefab.core.dir_paths['base'],
+        'CFGDIR': prefab.core.dir_paths['cfgDir'],
+        'DATADIR': prefab.core.replace('$VARDIR/data/'),
         'TMPDIR': '/tmp',
-        'VARDIR': cuisine.core.dir_paths['VARDIR']
+        'VARDIR': prefab.core.dir_paths['VARDIR']
         }
 
     branch = 'master'
-    build_path = cuisine.core.replace("$OPTDIR/build.yaml")
-    if cuisine.core.file_exists(build_path):
-        versions = j.data.serializer.yaml.loads(cuisine.core.file_read(build_path))
+    build_path = prefab.core.replace("$OPTDIR/build.yaml")
+    if prefab.core.file_exists(build_path):
+        versions = j.data.serializer.yaml.loads(prefab.core.file_read(build_path))
         if 'jumpscale' in versions:
             branch = versions['jumpscale']
 
@@ -76,36 +76,36 @@ def install(job):
         'identity': {'EMAIL': '', 'FULLNAME': '', 'GITHUBUSER': ''},
         'system': {'AYSBRANCH': branch, 'DEBUG': False, 'JSBRANCH': branch, 'SANDBOX': True}
         }
-    cfg_path = cuisine.core.replace("$JSCFGDIR/jumpscale/system.yaml")
-    cuisine.core.dir_ensure('$VARDIR/code/')
-    if cuisine.core.file_exists(cfg_path):
-        config = j.data.serializer.yaml.loads(cuisine.core.file_read(cfg_path))
+    cfg_path = prefab.core.replace("$JSCFGDIR/jumpscale/system.yaml")
+    prefab.core.dir_ensure('$VARDIR/code/')
+    if prefab.core.file_exists(cfg_path):
+        config = j.data.serializer.yaml.loads(prefab.core.file_read(cfg_path))
         if 'dirs' in config:
-            config['dirs']['CODEDIR'] = cuisine.core.replace('$VARDIR/code/')
-    cuisine.core.dir_ensure(j.sal.fs.getParent(cfg_path))
-    cuisine.core.file_write(cfg_path, j.data.serializer.yaml.dumps(config))
+            config['dirs']['CODEDIR'] = prefab.core.replace('$VARDIR/code/')
+    prefab.core.dir_ensure(j.sal.fs.getParent(cfg_path))
+    prefab.core.file_write(cfg_path, j.data.serializer.yaml.dumps(config))
     # make sure logging.yaml exists
-    logging_path = cuisine.core.replace("$JSCFGDIR/jumpscale/logging.yaml")
-    if not cuisine.core.file_exists(logging_path):
+    logging_path = prefab.core.replace("$JSCFGDIR/jumpscale/logging.yaml")
+    if not prefab.core.file_exists(logging_path):
         logging_config = {'mode': 'DEV', 'level': 'DEBUG', 'filter': ['j.sal.fs', 'j.data.hrd', 'j.application']}
-        cuisine.core.file_write(logging_path, j.data.serializer.yaml.dumps(logging_config))
-    cmd = cuisine.core.replace('jspython portal_start.py')
-    wd = cuisine.core.replace('$JSAPPSDIR/portals/main')
-    pm = cuisine.processmanager.get('tmux')
+        prefab.core.file_write(logging_path, j.data.serializer.yaml.dumps(logging_config))
+    cmd = prefab.core.replace('jspython portal_start.py')
+    wd = prefab.core.replace('$JSAPPSDIR/portals/main')
+    pm = prefab.processmanager.get('tmux')
     pm.ensure('portal_%s' % service.name, cmd=cmd, path=wd, autostart=True)
 
 
 def start(job):
     service = job.service
-    cuisine = service.executor.cuisine
-    cmd = cuisine.core.replace('jspython portal_start.py')
-    wd = cuisine.core.replace('$JSAPPSDIR/portals/main')
-    pm = cuisine.processmanager.get('tmux')
+    prefab = service.executor.prefab
+    cmd = prefab.core.replace('jspython portal_start.py')
+    wd = prefab.core.replace('$JSAPPSDIR/portals/main')
+    pm = prefab.processmanager.get('tmux')
     pm.ensure('portal_%s' % service.name, cmd=cmd, path=wd, autostart=True)
 
 
 def stop(job):
     service = job.service
-    cuisine = service.executor.cuisine
-    pm = cuisine.processmanager.get('tmux')
+    prefab = service.executor.prefab
+    pm = prefab.processmanager.get('tmux')
     pm.stop('portal_%s' % service.name)

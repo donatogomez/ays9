@@ -1,15 +1,15 @@
 def install(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
 
-    cuisine.package.mdupdate()
-    cuisine.package.install('fuse')
+    prefab.package.mdupdate()
+    prefab.package.install('fuse')
     bin_location = '/usr/local/bin/fs'
-    cuisine.core.dir_ensure('/usr/local/bin')
-    cuisine.core.file_download('https://stor.jumpscale.org/public/fs', bin_location)
-    cuisine.core.file_attribs('/usr/local/bin/fs', '0550')
+    prefab.core.dir_ensure('/usr/local/bin')
+    prefab.core.file_download('https://stor.jumpscale.org/public/fs', bin_location)
+    prefab.core.file_attribs('/usr/local/bin/fs', '0550')
 
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
 
     final_config = {
         'mount': [],
@@ -21,8 +21,8 @@ def install(job):
 
     for config in service.producers['vfs_config']:
         # TODO download flist
-        flist_path = cuisine.core.replace('$TMPDIR/%s' % j.sal.fs.getBaseName(config.model.data.mountFlist))
-        cuisine.core.file_download(config.model.data.mountFlist, flist_path, overwrite=True)
+        flist_path = prefab.core.replace('$TMPDIR/%s' % j.sal.fs.getBaseName(config.model.data.mountFlist))
+        prefab.core.file_download(config.model.data.mountFlist, flist_path, overwrite=True)
 
         targets.append(config.model.data.mountMountpoint)
 
@@ -35,7 +35,7 @@ def install(job):
             'trim': config.model.data.mountTrim,
         }
 
-        cuisine.core.dir_ensure(config.model.data.backendPath)
+        prefab.core.dir_ensure(config.model.data.backendPath)
         backend = {
             'path': config.model.data.backendPath,
             'stor': config.name,
@@ -62,7 +62,7 @@ def install(job):
     # make sure nonthing is already mounted
     for mount in final_config['mount']:
         cmd = 'umount -fl %s' % mount['path']
-        cuisine.core.run(cmd, die=False)
+        prefab.core.run(cmd, die=False)
 
     # create all mountpoints but make sure we don't create folder inside mountpoints in the cases
     # we would have a mountpoint inside another
@@ -77,15 +77,15 @@ def install(job):
             todelete.add(path)
 
     for path in tocreate.difference(todelete):
-        cuisine.core.dir_ensure(path)
+        prefab.core.dir_ensure(path)
 
     # write config
-    config_path = cuisine.core.replace('$JSCFGDIR/fs/%s.toml' % service.name)
-    cuisine.core.file_write(config_path, j.data.serializer.toml.dumps(final_config))
+    config_path = prefab.core.replace('$JSCFGDIR/fs/%s.toml' % service.name)
+    prefab.core.file_write(config_path, j.data.serializer.toml.dumps(final_config))
 
     # create service
-    pm = cuisine.processmanager.get('tmux')
-    bin_location = cuisine.core.command_location('fs')
+    pm = prefab.processmanager.get('tmux')
+    bin_location = prefab.core.command_location('fs')
     cmd = '%s -config %s' % (bin_location, config_path)
     pm.ensure("fs_%s" % service.name, cmd=cmd, env={}, path='$JSCFGDIR/fs', descr='G8OS FS', autostart=True, wait="3m")
 
@@ -96,7 +96,7 @@ def install(job):
     for target in targets:
         trials = 12
         while trials > 0:
-            code, _, _ = cuisine.core.run('mount | grep -P "on {}\s"'.format(target), die=False)
+            code, _, _ = prefab.core.run('mount | grep -P "on {}\s"'.format(target), die=False)
             if code != 0:
                 # not found yet. We sleep for 5 seconds
                 time.sleep(5)
@@ -112,7 +112,7 @@ def start(job):
 
 def stop(job):
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
 
-    pm = cuisine.processmanager.get('tmux')
+    pm = prefab.processmanager.get('tmux')
     pm.stop('fs_%s' % service.name)

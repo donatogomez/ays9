@@ -156,14 +156,14 @@ def init(job):
     # # write the init script that will be used in case of machine shutdown
     #
     # os = service.aysrepo.servicesFind(actor='os.*', name=service.model.data.hostNode)[0]
-    # vm_cuisine = os.executor.cuisine
-    # rc_local = vm_cuisine.core.file_read('/etc/rc.local').split('\n')
+    # vm_prefab = os.executor.prefab
+    # rc_local = vm_prefab.core.file_read('/etc/rc.local').split('\n')
     # for idx, line in enumerate(rc_local):
     #     if line == 'exit 0':
     #         rc_local.insert(idx, 'bash /etc/startup.sh')
     #         rc_local.insert(idx, 'export HOME=/root')
     #         break
-    # vm_cuisine.core.file_write('/etc/rc.local', '\n'.join(rc_local))
+    # vm_prefab.core.file_write('/etc/rc.local', '\n'.join(rc_local))
 
 
 
@@ -186,7 +186,7 @@ def init(job):
 
 def update(job):
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
 
     dependencies = ['caddy', 'mongodb', 'redis', 'portal', 'ayscockpit']
     service.logger.info('stop all dependencies')
@@ -200,11 +200,11 @@ def update(job):
     job.executeInProcess()
 
     os = service.aysrepo.servicesFind(actor='os.*', name=service.model.data.hostNode)[0]
-    vm_cuisine = os.executor.cuisine
+    vm_prefab = os.executor.prefab
 
     service.logger.info('remove fs backend')
     vfs_config = service.aysrepo.serviceGet('vfs_config', 'opt')
-    vm_cuisine.core.dir_remove(vfs_config.model.data.backendPath, recursive=True)
+    vm_prefab.core.dir_remove(vfs_config.model.data.backendPath, recursive=True)
 
     service.logger.info('restart fuse')
     job = fs.getJob('start')

@@ -100,9 +100,9 @@ class AtYourServiceRepoCollection:
         j.sal.fs.createEmptyFile(j.sal.fs.joinPaths(path, '.ays'))
         j.sal.fs.createDir(j.sal.fs.joinPaths(path, 'actorTemplates'))
         j.sal.fs.createDir(j.sal.fs.joinPaths(path, 'blueprints'))
-        j.tools.cuisine.local.core.run('cd {};git init'.format(path))
+        j.tools.executorLocal.execute('cd {};git init'.format(path))
         if git_url:
-            j.tools.cuisine.local.core.run(
+            j.tools.executorLocal.execute(
                 'cd {path};git remote add origin {url}'.format(path=path, url=git_url))
         j.sal.nettools.download(
             'https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore', j.sal.fs.joinPaths(path, '.gitignore'))

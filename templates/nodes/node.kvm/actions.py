@@ -1,5 +1,5 @@
 def install(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
     data = job.service.model.data
     name = job.service.name
 
@@ -8,7 +8,7 @@ def install(job):
 
     nics = data.nics
 
-    vm = cuisine.systemservices.kvm.machines.create(
+    vm = prefab.systemservices.kvm.machines.create(
         name=name,
         os=image_name,
         disks=list(data.disks),
@@ -30,11 +30,11 @@ def install(job):
 
 
 def start(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
     data = job.service.model.data
     name = job.service.name
 
-    vm = cuisine.systemservices.kvm.machines.get_by_name(name)
+    vm = prefab.systemservices.kvm.machines.get_by_name(name)
     vm.start()
 
     ip = vm.ip
@@ -42,18 +42,18 @@ def start(job):
         raise j.exceptions.RuntimeError("vm {} didn't receive an IP address".format(name))
 
     data.ipPrivate = ip
-    data.ipPublic = cuisine._executor.addr
+    data.ipPublic = prefab._executor.addr
 
     job.service.model.actions['stop'].state = 'new'
 
     job.service.saveAll()
 
 def stop(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
     data = job.service.model.data
     name = job.service.name
 
-    vm = cuisine.systemservices.kvm.machines.get_by_name(name)
+    vm = prefab.systemservices.kvm.machines.get_by_name(name)
     vm.stop()
 
     data.ipPrivate = ''
@@ -64,10 +64,10 @@ def stop(job):
     job.service.saveAll()
 
 def uninstall(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
     name = job.service.name
 
-    vm = cuisine.systemservices.kvm.machines.get_by_name(name)
+    vm = prefab.systemservices.kvm.machines.get_by_name(name)
     if vm.is_started:
         vm.stop()
     vm.delete()

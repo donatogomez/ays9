@@ -1,9 +1,9 @@
 def install(job):
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
 
-    cuisine.apps.redis.install()
-    cuisine.apps.redis.start(
+    prefab.apps.redis.install()
+    prefab.apps.redis.start(
         name=service.name,
         ip=service.model.data.host if service.model.data.host != '' else None,
         port=service.model.data.port,
@@ -14,10 +14,10 @@ def install(job):
 
 def start(job):
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
 
-    cuisine.apps.redis.install()
-    cuisine.apps.redis.start(
+    prefab.apps.redis.install()
+    prefab.apps.redis.start(
         name=service.name,
         ip=service.model.data.host if service.model.data.host != '' else None,
         port=service.model.data.port,
@@ -28,5 +28,5 @@ def start(job):
 
 def stop(job):
     service = job.service
-    cuisine = service.executor.cuisine
-    cuisine.apps.redis.stop(job.service.name)
+    prefab = service.executor.prefab
+    prefab.apps.redis.stop(job.service.name)

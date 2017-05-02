@@ -40,14 +40,14 @@ class AtYourServiceFactory:
         """
         self.logger.info("start ays service, will take 5 sec")
         try:
-            sname = j.tools.cuisine.local.tmux.getSessions()[0]
+            sname = j.tools.prefab.local.tmux.getSessions()[0]
         except:
             sname = "main"
         cmd = "cd /opt/code/github/jumpscale/jumpscale_core8/apps/atyourservice; jspython main.py --host {host} --port {port}".format(
             host=bind, port=port)
         if debug:
             cmd += ' --debug'
-        rc, out = j.tools.cuisine.local.tmux.executeInScreen(sname, "ays", cmd, reset=True, wait=5)
+        rc, out = j.tools.prefab.local.tmux.executeInScreen(sname, "ays", cmd, reset=True, wait=5)
         if rc > 0:
             raise RuntimeError("Cannot start AYS service")
         self.logger.debug(out)

@@ -1,29 +1,29 @@
 def install(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
 
     # For now we download FS from there. when we have proper VM image it will be installed already
-    if not cuisine.core.command_check('fs'):
-        cuisine.core.dir_ensure('$BINDIR')
-        cuisine.core.file_download('https://stor.jumpscale.org/public/fs', '$BINDIR/fs')
-        cuisine.core.file_attribs('$BINDIR/fs', '0550')
+    if not prefab.core.command_check('fs'):
+        prefab.core.dir_ensure('$BINDIR')
+        prefab.core.file_download('https://stor.jumpscale.org/public/fs', '$BINDIR/fs')
+        prefab.core.file_attribs('$BINDIR/fs', '0550')
 
 
 def start(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
     service = job.service
     actor = service.aysrepo.actorGet(name=service.model.dbobj.actorName)
 
-    cuisine.core.dir_ensure('$JSCFGDIR/fs/flists')
+    prefab.core.dir_ensure('$JSCFGDIR/fs/flists')
     for flist in actor.model.dbobj.flists:
         args = {}
-        args['flist_path'] = cuisine.core.replace('$JSCFGDIR/fs/flists/%s' % flist.name)
-        cuisine.core.file_write(args['flist_path'], flist.content)
+        args['flist_path'] = prefab.core.replace('$JSCFGDIR/fs/flists/%s' % flist.name)
+        prefab.core.file_write(args['flist_path'], flist.content)
         args['mountpoint'] = flist.mountpoint
         args['mode'] = flist.mode.__str__().upper()
         args['namespace'] = flist.namespace
         args['store_url'] = flist.storeUrl
 
-        cuisine.core.dir_ensure(args['mountpoint'])
+        prefab.core.dir_ensure(args['mountpoint'])
 
         config = """
         [[mount]]
@@ -51,30 +51,30 @@ def start(job):
         [aydostor.stor1]
             addr="{store_url}"
         """.format(**args)
-        config_path = cuisine.core.replace('$JSCFGDIR/fs/%s.toml' % flist.name)
-        cuisine.core.file_write(config_path, config)
+        config_path = prefab.core.replace('$JSCFGDIR/fs/%s.toml' % flist.name)
+        prefab.core.file_write(config_path, config)
 
-        pm = cuisine.processmanager.get('tmux')
+        pm = prefab.processmanager.get('tmux')
         cmd = '$BINDIR/fs -config %s' % config_path
         pm.ensure("fs_%s" % flist.name, cmd=cmd, env={}, path='$JSCFGDIR/fs', descr='G8OS FS')
 
 
 def stop(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
     service = job.service
     actor = service.aysrepo.actorGet(name=service.model.dbobj.actorName)
 
     for flist in actor.model.dbobj.flists:
-        config_path = cuisine.core.replace('$JSCFGDIR/fs/%s.toml' % flist.name)
-        flist_config = cuisine.core.file_read(config_path)
+        config_path = prefab.core.replace('$JSCFGDIR/fs/%s.toml' % flist.name)
+        flist_config = prefab.core.file_read(config_path)
         flist_config = j.data.serializer.toml.loads(flist_config)
 
-        pm = cuisine.processmanager.get('tmux')
+        pm = prefab.processmanager.get('tmux')
         pm.stop('fs_%s' % flist.name)
 
         for mount in flist_config['mount']:
             cmd = 'umount -fl %s' % mount['path']
-            cuisine.core.run(cmd)
+            prefab.core.run(cmd)
 
 
 def processChange(job):
@@ -88,15 +88,15 @@ def processChange(job):
 
 def start_flist(job):
     args = job.model.args
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
 
-    cuisine.core.dir_ensure('$JSCFGDIR/fs/flists')
+    prefab.core.dir_ensure('$JSCFGDIR/fs/flists')
     flist_content = j.sal.fs.fileGetContents(args['flist'])
     flist_name = j.sal.fs.getBaseName(args['flist'])
-    args['flist_path'] = cuisine.core.replace('$JSCFGDIR/fs/flists/%s' % flist_name)
-    cuisine.core.file_write(args['flist_path'], flist_content)
+    args['flist_path'] = prefab.core.replace('$JSCFGDIR/fs/flists/%s' % flist_name)
+    prefab.core.file_write(args['flist_path'], flist_content)
 
-    cuisine.core.dir_ensure(args['mount_path'])
+    prefab.core.dir_ensure(args['mount_path'])
 
     config = """
     [[mount]]
@@ -124,26 +124,26 @@ def start_flist(job):
     [aydostor.stor1]
         addr="{store_addr}"
     """.format(**args)
-    config_path = cuisine.core.replace('$JSCFGDIR/fs/%s.toml' % flist_name)
-    cuisine.core.file_write(config_path, config)
+    config_path = prefab.core.replace('$JSCFGDIR/fs/%s.toml' % flist_name)
+    prefab.core.file_write(config_path, config)
 
-    pm = cuisine.processmanager.get('tmux')
+    pm = prefab.processmanager.get('tmux')
     cmd = '$BINDIR/fs -config %s' % config_path
     pm.ensure("fs_%s" % flist_name, cmd=cmd, env={}, path='$JSCFGDIR/fs', descr='G8OS FS')
 
 
 def stop_flist(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
     args = job.model.args
 
     flist_name = j.sal.fs.getBaseName(args['flist'])
-    config_path = cuisine.core.replace('$JSCFGDIR/fs/%s.toml' % flist_name)
-    flist_config = cuisine.core.file_read(config_path)
+    config_path = prefab.core.replace('$JSCFGDIR/fs/%s.toml' % flist_name)
+    flist_config = prefab.core.file_read(config_path)
     flist_config = j.data.serializer.toml.loads(flist_config)
 
-    pm = cuisine.processmanager.get('tmux')
+    pm = prefab.processmanager.get('tmux')
     pm.stop('fs_%s' % flist_name)
 
     for mount in flist_config['mount']:
         cmd = 'umount -fl %s' % mount['path']
-        cuisine.core.run(cmd)
+        prefab.core.run(cmd)

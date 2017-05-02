@@ -3,11 +3,11 @@ def install(job):
     Installing zerotier
     """
     service = job.service
-    cuisine = service.parent.executor.cuisine
+    prefab = service.parent.executor.prefab
 
     # build and install zerotier
-    cuisine.package.update()
-    zerotier_client = cuisine.apps.zerotier
+    prefab.package.update()
+    zerotier_client = prefab.apps.zerotier
     zerotier_client.build()
     zerotier_client.install()
     zerotier_client.start()

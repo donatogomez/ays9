@@ -91,25 +91,25 @@ def build(service, build_func, build_destination='/mnt/building'):
     #     job.method(job)
 
     # make sure the building destinatin exists
-    cuisine = os.executor.cuisine
+    prefab = os.executor.prefab
     executordict = '$VARDIR/jsexecutor.json'
-    if cuisine.core.file_exists(executordict):
-        cuisine.core.run('rm %s' % executordict)
-    cuisine.core.configReset()
-    cuisine.core.dir_ensure(build_destination)
+    if prefab.core.file_exists(executordict):
+        prefab.core.run('rm %s' % executordict)
+    prefab.core.configReset()
+    prefab.core.dir_ensure(build_destination)
 
     # do the actual building
-    build_func(cuisine)
+    build_func(prefab)
 
-    cfg_path = cuisine.core.replace("$BASEDIR/build.yaml")
+    cfg_path = prefab.core.replace("$BASEDIR/build.yaml")
     branch = service.model.data.branch if hasattr(service.model.data, 'branch') else 'master'
     versions = {service.model.role: branch}
-    if cuisine.core.file_exists(cfg_path):
-        config = j.data.serializer.yaml.loads(cuisine.core.file_read(cfg_path))
+    if prefab.core.file_exists(cfg_path):
+        config = j.data.serializer.yaml.loads(prefab.core.file_read(cfg_path))
         config.update(versions)
     else:
         config = versions
-    cuisine.core.file_write(cfg_path, j.data.serializer.yaml.dumps(config))
+    prefab.core.file_write(cfg_path, j.data.serializer.yaml.dumps(config))
 
 
     # find the os layer of the build host
@@ -123,8 +123,8 @@ def build(service, build_func, build_destination='/mnt/building'):
     else:
         raise j.exceptions.AYSNotFound("can't find os layer of builder host")
 
-    cuisine_host = os_hostbuidler.executor.cuisine
+    prefab_host = os_hostbuidler.executor.prefab
     # create a new image from the result of the build
     docker_id = os.parent.model.data.id
     cmd = 'docker commit {id} aysbuilding_{name}'.format(id=docker_id, name=service.model.dbobj.actorName)
-    cuisine_host.core.run(cmd)
+    prefab_host.core.run(cmd)

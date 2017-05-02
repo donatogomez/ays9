@@ -12,15 +12,15 @@ def input(job):
 
 def install(job):
     '''
-    make sure docker is properly installed (use cuisine functionality)
+    make sure docker is properly installed (use prefab functionality)
     '''
     service = job.service
-    cuisine = service.executor.cuisine
-    if not cuisine.systemservices.docker.isInstalled():
-        cuisine.systemservices.docker.install()
+    prefab = service.executor.prefab
+    if not prefab.systemservices.docker.isInstalled():
+        prefab.systemservices.docker.install()
 
-    if not cuisine.systemservices.dockercompose.isInstalled():
-        cuisine.systemservices.dockercompose.install()
+    if not prefab.systemservices.dockercompose.isInstalled():
+        prefab.systemservices.dockercompose.install()
 
 
 def start(job):

@@ -19,17 +19,17 @@ def install(job):
     else:
         raise j.exceptions.AYSNotFound("Can't find os service")
 
-    cuisine = host_os.executor.cuisine
+    prefab = host_os.executor.prefab
     import ipdb;ipdb.set_trace
-    if cuisine.core.dir_exists('/mnt/building/opt')
-    	cuisine.core.dir_remove('/mnt/building/opt')
+    if prefab.core.dir_exists('/mnt/building/opt')
+    	prefab.core.dir_remove('/mnt/building/opt')
     dockers = ['packager', 'cockpit', 'portal', 'jumpscale', 'scality', 'geodns', 'php',
                'fs', 'grafana', 'python', 'nodejs', 'mongodb', 'golang', 'nginx', 
                'shellinabox', 'caddy', 'influxdb', 'redis']
     for docker in dockers:
     	try:
-            check = cuisine.core.run('docker ps -a | grep -o -F %s' %docker)
+            check = prefab.core.run('docker ps -a | grep -o -F %s' %docker)
             if check[1] == docker:
-               cuisine.core.execute_bash('docker rm -f %s' %docker)
+               prefab.core.execute_bash('docker rm -f %s' %docker)
         except:
             continue 

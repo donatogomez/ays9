@@ -1,10 +1,10 @@
 def install(job):
     service = job.service
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
 
     name = "caddy_%s" % service.name
-    proxies_dir = cuisine.core.replace('$JSCFGDIR/caddy/%s/proxies' % name)
-    cuisine.core.dir_ensure(proxies_dir)
+    proxies_dir = prefab.core.replace('$JSCFGDIR/caddy/%s/proxies' % name)
+    prefab.core.dir_ensure(proxies_dir)
 
     for proxy_info in service.producers.get('caddy_proxy', []):
         dst = ' '.join(proxy_info.model.data.dst)
@@ -21,7 +21,7 @@ def install(job):
             cfg += '\ttransparent\n'
         cfg += '}\n'
 
-        cuisine.core.file_write(proxies_dir + '/%s' % proxy_info.name, cfg)
+        prefab.core.file_write(proxies_dir + '/%s' % proxy_info.name, cfg)
 
     cfg = ''
     if not service.model.data.hostname:
@@ -32,16 +32,16 @@ def install(job):
         cfg += 'gzip\n'
     cfg += 'import %s/*\n' % proxies_dir
 
-    conf_location = cuisine.core.replace('$JSCFGDIR/caddy/%s/Caddyfile' % name)
-    cuisine.core.file_write(conf_location, cfg)
+    conf_location = prefab.core.replace('$JSCFGDIR/caddy/%s/Caddyfile' % name)
+    prefab.core.file_write(conf_location, cfg)
 
-    #bin_location = cuisine.core.command_location('caddy')
+    #bin_location = prefab.core.command_location('caddy')
     # FORCE TO USE NEW VERSION OF CADDY
     caddy_url = 'https://github.com/mholt/caddy/releases/download/v0.9.4/caddy_linux_amd64.tar.gz'
     dest = '$tmpDir/caddy_linux_amd64.tar.gz'
-    cuisine.core.file_download(caddy_url, dest)
-    cuisine.core.run('cd $tmpDir && tar xvf $tmpDir/caddy_linux_amd64.tar.gz && mv $tmpDir/caddy_linux_amd64 /root/caddybin')
-    bin_location = cuisine.core.replace('/root/caddybin')
+    prefab.core.file_download(caddy_url, dest)
+    prefab.core.run('cd $tmpDir && tar xvf $tmpDir/caddy_linux_amd64.tar.gz && mv $tmpDir/caddy_linux_amd64 /root/caddybin')
+    bin_location = prefab.core.replace('/root/caddybin')
     cmd = '{bin} -conf {conf} --agree --email {email}'.format(
         bin=bin_location,
         conf=conf_location,
@@ -49,14 +49,14 @@ def install(job):
     if service.model.data.stagging is True:
         # enable stating environment, remove for prodction
         cmd += ' -ca https://acme-staging.api.letsencrypt.org/directory'
-    cuisine.processmanager.ensure("caddy_%s" % service.name, cmd=cmd, path='$JSCFGDIR/caddy/%s' % name, autostart=True)
+    prefab.processmanager.ensure("caddy_%s" % service.name, cmd=cmd, path='$JSCFGDIR/caddy/%s' % name, autostart=True)
 
 
 def start(job):
-    cuisine = job.service.executor.cuisine
-    cuisine.processmanager.start("caddy_%s" % job.service.name)
+    prefab = job.service.executor.prefab
+    prefab.processmanager.start("caddy_%s" % job.service.name)
 
 
 def stop(job):
-    cuisine = job.service.executor.cuisine
-    cuisine.processmanager.stop("caddy_%s" % job.service.name)
+    prefab = job.service.executor.prefab
+    prefab.processmanager.stop("caddy_%s" % job.service.name)

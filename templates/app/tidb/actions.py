@@ -3,13 +3,13 @@ def install(job):
     Installing owncloud
     """
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
 
     clusterId = service.model.data.clusterId
     # dbname = service.model.data.dbname
     # dbuser = service.model.data.dbuser
     # dbpassword = service.model.data.dbpass
 
-    cuisine.apps.tidb.start()
-    cuisine.package.mdupdate()
-    cuisine.package.install('mysql-client-core-5.7')
+    prefab.apps.tidb.start()
+    prefab.package.mdupdate()
+    prefab.package.install('mysql-client-core-5.7')

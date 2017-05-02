@@ -5,9 +5,9 @@ def install(job):
     """
     service = job.service
 
-    cuisine = service.executor.cuisine
-    cuisine.core.dir_ensure(service.model.data.storageData)
-    cuisine.core.dir_ensure(service.model.data.storageMeta)
+    prefab = service.executor.prefab
+    prefab.core.dir_ensure(service.model.data.storageData)
+    prefab.core.dir_ensure(service.model.data.storageMeta)
 
     env = {
         'S3DATAPATH': service.model.data.storageData,
@@ -16,13 +16,13 @@ def install(job):
 
     app_path = '/opt/jumpscale8/apps/S3'
     config_path = j.sal.fs.joinPaths(app_path, 'config.json')
-    config_str = cuisine.core.file_read(config_path)
+    config_str = prefab.core.file_read(config_path)
     config = j.data.serializer.json.loads(config_str)
     config['regions'] = {
         'us-east-1': [service.model.data.domain]
     }
 
-    cuisine.core.file_write(
+    prefab.core.file_write(
         config_path,
         j.data.serializer.json.dumps(config, indent=2)
     )
@@ -42,7 +42,7 @@ def install(job):
 
     #setup user auth
     config_path = j.sal.fs.joinPaths(app_path, 'conf', 'authdata.json')
-    config_str = cuisine.core.file_read(config_path)
+    config_str = prefab.core.file_read(config_path)
     config = j.data.serializer.json.loads(config_str)
     default_account = config['accounts'][0]
     default_account['name'] = 'ays'
@@ -55,12 +55,12 @@ def install(job):
     default_account.pop('users', None)
 
     config['accounts'] = [default_account]
-    cuisine.core.file_write(
+    prefab.core.file_write(
         config_path,
         j.data.serializer.json.dumps(config, indent=2)
     )
 
-    pm = cuisine.processmanager.get('tmux')
+    pm = prefab.processmanager.get('tmux')
     pm.ensure(
         name='scalityS3',
         cmd='npm start',

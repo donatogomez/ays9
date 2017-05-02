@@ -1,6 +1,6 @@
 def install(job):
     service = job.service
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
 
     cfg = {'token': service.model.data.botToken,
            'oauth': {
@@ -13,14 +13,14 @@ def install(job):
                'itsyouonlinehost': service.model.data.oauthItsyouonlinehost
                }
            }
-    cuisine.apps.aysbot.create_config(cfg=cfg)
-    cuisine.apps.aysbot.install()
+    prefab.apps.aysbot.create_config(cfg=cfg)
+    prefab.apps.aysbot.install()
 
 def start(job):
-    cuisine = job.service.executor.cuisine
-    cuisine.processmanager.start('aysbot__main')
+    prefab = job.service.executor.prefab
+    prefab.processmanager.start('aysbot__main')
 
 
 def stop(job):
-    cuisine = job.service.executor.cuisine
-    cuisine.processmanager.stop('aysbot__main')
+    prefab = job.service.executor.prefab
+    prefab.processmanager.stop('aysbot__main')

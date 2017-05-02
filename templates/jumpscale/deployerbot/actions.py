@@ -3,14 +3,14 @@ def install(job):
     import yaml
 
     service = job.service
-    cuisine = service.executor.cuisine
+    prefab = service.executor.prefab
     args = service.model.data
 
     # Install dependencies
-    cuisine.development.js8.install()
-    cuisine.apps.redis.build(reset=True)
-    cuisine.apps.redis.start(maxram="200mb")
-    cuisine.solutions.cockpit.install_deps()
+    prefab.development.js8.install()
+    prefab.apps.redis.build(reset=True)
+    prefab.apps.redis.start(maxram="200mb")
+    prefab.solutions.cockpit.install_deps()
 
     # Configure ays
     AYS_CONFIG_LOCATION = "$JSCFGDIR/ays/ays.conf"
@@ -28,20 +28,20 @@ def install(job):
     }
 
     ays_conf = yaml.dump(_conf, default_flow_style=False)
-    cuisine.core.dir_ensure(os.path.dirname(AYS_CONFIG_LOCATION))
-    cuisine.core.file_write(location=AYS_CONFIG_LOCATION, content=ays_conf, replaceArgs=True)
-    pm = cuisine.processmanager.get("tmux")
+    prefab.core.dir_ensure(os.path.dirname(AYS_CONFIG_LOCATION))
+    prefab.core.file_write(location=AYS_CONFIG_LOCATION, content=ays_conf, replaceArgs=True)
+    pm = prefab.processmanager.get("tmux")
     pm.ensure(name="ays_daemon", cmd="ays start -c {config}".format(config=AYS_CONFIG_LOCATION))
 
-    cuisine.development.git.pullRepo('https://github.com/Jumpscale/jscockpit', '$CODEDIR/github/jumpscale/jscockpit')
+    prefab.development.git.pullRepo('https://github.com/Jumpscale/jscockpit', '$CODEDIR/github/jumpscale/jscockpit')
 
     # Prepare ssh keys
     dns = service.producers['sshkey'][0]
     DNS_PATH = '/root/.ssh/dns_rsa'
-    cuisine.core.file_write(location=DNS_PATH,
+    prefab.core.file_write(location=DNS_PATH,
                             content=dns.model.data.keyPriv,
                             mode=600)
-    cuisine.core.run("ssh-keygen -y -f {dns_path} > {dns_path}.pub".format(dns_path=DNS_PATH))
+    prefab.core.run("ssh-keygen -y -f {dns_path} > {dns_path}.pub".format(dns_path=DNS_PATH))
 
     # Prepare the conifg.yaml
     g8_options = {}
@@ -67,7 +67,7 @@ def install(job):
         }
     }
     deployer_cfg = yaml.dump(deployer_cfg, default_flow_style=False)
-    cuisine.core.file_write(location="$CODEDIR/github/jumpscale/jscockpit/deployer_bot/config.yaml",
+    prefab.core.file_write(location="$CODEDIR/github/jumpscale/jscockpit/deployer_bot/config.yaml",
                             content=deployer_cfg,
                             replaceArgs=True)
 

@@ -18,20 +18,20 @@ def init_actions_(service, args):
     }
 
 def install(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
     data = job.service.model.data
 
-    cuisine.systemservices.kvm.disks.download_image(url=data.url, overwrite=data.overwrite)
+    prefab.systemservices.kvm.disks.download_image(url=data.url, overwrite=data.overwrite)
 
     job.service.model.actions['uninstall'].state = 'new'
     job.service.saveAll()
 
 def uninstall(job):
-    cuisine = job.service.executor.cuisine
+    prefab = job.service.executor.prefab
     data = job.service.model.data
     name = data.url.split('/')[-1]
-    path = cuisine.systemservices.kvm.image_get_path(name)
-    cuisine.core.file_unlink(path)
+    path = prefab.systemservices.kvm.image_get_path(name)
+    prefab.core.file_unlink(path)
 
     job.service.model.actions['install'].state = 'new'
     job.service.saveAll()
