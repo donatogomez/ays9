@@ -1,4 +1,3 @@
-
 from js9 import j
 from collections import OrderedDict
 
@@ -8,7 +7,7 @@ class ActorTemplate():
     def __init__(self, path, template_repo=None):
         self.logger = j.logger.get('j.core.atyourservice')
 
-        if template_repo != None:
+        if template_repo is not None:
             if j.sal.fs.exists(path=path):
                 # we know its absolute
                 relpath = j.sal.fs.pathRemoveDirPart(

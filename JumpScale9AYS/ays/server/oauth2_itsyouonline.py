@@ -1,10 +1,6 @@
 from js9 import j
 
 from functools import wraps
-from asyncio import get_event_loop
-
-from sanic.response import text, json
-
 from jose import jwt, exceptions
 
 oauth2_server_pub_key = """"""

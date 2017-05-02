@@ -1,7 +1,6 @@
 from js9 import j
 from .Service import Service
 import capnp
-import msgpack
 from JumpScale9AYS.ays.lib import model_capnp as ModelCapnp
 
 

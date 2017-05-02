@@ -1,9 +1,5 @@
-import json as JSON
-
 import asyncio
-from sanic.response import json, text
-import jsonschema
-from jsonschema import Draft4Validator
+from sanic.response import json
 from js9 import j
 
 import os

@@ -1,19 +1,17 @@
 from js9 import j
 
-from .lib.TemplateRepo import TemplateRepoCollection
-from .lib.ActorTemplate import ActorTemplate
-from .lib import ActionsBase
-from .lib.AtYourServiceRepo import AtYourServiceRepo, AtYourServiceRepoCollection
-from .lib.AtYourServiceTester import AtYourServiceTester
+from JumpScale9AYS.ays.lib.TemplateRepo import TemplateRepoCollection
+from JumpScale9AYS.ays.lib import ActionsBase
+from JumpScale9AYS.ays.lib.AtYourServiceRepo import AtYourServiceRepoCollection
+from JumpScale9AYS.ays.lib.AtYourServiceTester import AtYourServiceTester
 
+import asyncio
 import colored_traceback
-import os
+import inspect
 import sys
 if "." not in sys.path:
     sys.path.append(".")
 
-import inspect
-import asyncio
 
 colored_traceback.add_hook(always=True)
 
@@ -183,17 +181,17 @@ class AtYourServiceFactory:
             print("upgrade:%s" % ppath)
             schema = j.data.hrd.getSchema(path=ppath + "/schema.hrd")
             actor = j.data.hrd.get(path=ppath + "/actor.hrd")
-            if schema != None:
+            if schema is not None:
                 j.sal.fs.writeFile(ppath + "/schema.capnp", schema.capnpSchema)
 
             schemaParent = schema.parentSchemaItemGet()
             schemaConsume = schema.consumeSchemaItemsGet()
             output = {}
 
-            if schemaParent != None or schemaConsume != []:
+            if schemaParent is not None or schemaConsume != []:
                 output['links'] = {}
 
-            if schemaParent != None:
+            if schemaParent is not None:
                 output['links'] = {'parent': {
                     'role':  sanitize_key(schemaParent.parent),
                     'auto': bool(schemaParent.auto),

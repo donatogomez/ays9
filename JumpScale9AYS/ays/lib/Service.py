@@ -1,5 +1,5 @@
 from js9 import j
-from .Recurring import RecurringTask
+from JumpScale9AYS.ays.lib.Recurring import RecurringTask
 import asyncio
 
 

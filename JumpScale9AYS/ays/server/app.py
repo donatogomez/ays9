@@ -1,5 +1,4 @@
 from sanic import Sanic
-from sanic.response import json
 
 from .server.ays_if import ays_if
 from .server.webhooks_if import webhooks_if

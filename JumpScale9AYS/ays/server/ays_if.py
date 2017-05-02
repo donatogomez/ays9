@@ -1,10 +1,8 @@
 from sanic import Blueprint
 from sanic.views import HTTPMethodView
 from sanic.response import text
-import .server.ays_api as ays_api
-
-
-from .server.oauth2_itsyouonline import oauth2_itsyouonline
+from JumpScale9AYS.ays.server import ays_api
+from JumpScale9AYS.ays.server.oauth2_itsyouonline import oauth2_itsyouonline
 
 ays_if = Blueprint('ays_if')
 

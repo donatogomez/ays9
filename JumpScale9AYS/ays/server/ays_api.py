@@ -4,12 +4,12 @@ import jsonschema
 from jsonschema import Draft4Validator
 import capnp
 
-from .server.views import service_view
-from .server.views import run_view
-from .server.views import actor_view
-from .server.views import blueprint_view
-from .server.views import template_view
-from .server.views import repository_view
+from JumpScale9AYS.ays.server.views import service_view
+from JumpScale9AYS.ays.server.views import run_view
+from JumpScale9AYS.ays.server.views import actor_view
+from JumpScale9AYS.ays.server.views import blueprint_view
+from JumpScale9AYS.ays.server.views import template_view
+from JumpScale9AYS.ays.server.views import repository_view
 from js9 import j
 
 logger = j.logger.get('j.ays.sanic')

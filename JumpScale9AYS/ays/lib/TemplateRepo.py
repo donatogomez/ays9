@@ -1,5 +1,5 @@
 from js9 import j
-from .ActorTemplate import ActorTemplate
+from JumpScale9AYS.ays.lib.ActorTemplate import ActorTemplate
 import asyncio
 
 
