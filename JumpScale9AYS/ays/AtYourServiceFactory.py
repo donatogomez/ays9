@@ -24,15 +24,15 @@ class AtYourServiceFactory:
         self.loop = None
         self._config = None
         self._domains = []
-        self.debug = j.core.db.get("atyourservice.debug") == 1
-        self.logger = j.logger.get('I hope you had a nice birthday and I h')
+        self.debug = j.application.config['system']['debug']
+        self.logger = j.logger.get('j.atyourservice')
 
         self.baseActions = {}
         self.templateRepos = None
         self.aysRepos = None
         self._cleanupHandle = None
 
-    def start(self, bind='127.0.0.1', port=5000, debug=False):
+    def start(self, bind='127.0.0.1', port=5000, log='info'):
         """
         start an ays service on your local platform
         """
@@ -41,15 +41,16 @@ class AtYourServiceFactory:
             sname = j.tools.prefab.local.tmux.getSessions()[0]
         except:
             sname = "main"
-        cmd = "cd /opt/code/github/jumpscale/jumpscale_core8/apps/atyourservice; jspython main.py --host {host} --port {port}".format(
-            host=bind, port=port)
-        if debug:
-            cmd += ' --debug'
+        cmd = "cd {codedir}/github/jumpscale/ays9; python3 main.py --host {host} --port {port} --log {log}".format(
+            codedir=j.dirs.CODEDIR, host=bind, port=port, log=log)
+        print("Starting AtYourService server in a tmux session")
         rc, out = j.tools.prefab.local.tmux.executeInScreen(sname, "ays", cmd, reset=True, wait=5)
         if rc > 0:
             raise RuntimeError("Cannot start AYS service")
-        self.logger.debug(out)
-        self.logger.info("go to http://{}:{} to see rest api".format(bind, port))
+
+        if log == 'debug':
+            print("debug logging enabled")
+        print("AYS server running at http://{}:{}".format(bind, port))
         return rc, out
 
     def cleanup(self):
@@ -93,7 +94,7 @@ class AtYourServiceFactory:
     @property
     def config(self):
         if self._config is None:
-            cfg = j.application.config.jumpscale.get('ays')
+            cfg = j.application.config.get('ays')
             if not cfg:
                 cfg = {}
             if 'redis' not in cfg:
@@ -174,8 +175,12 @@ class AtYourServiceFactory:
             return key
 
         if actors_paths == []:
-            j.sal.fswalker.walkFunctional(path, callbackFunctionFile=None, callbackFunctionDir=callbackFunctionDir, arg=[path, actors_paths, "", ""],
-                                          callbackForMatchDir=callbackForMatchDir, callbackForMatchFile=lambda x, y: False)
+            j.sal.fswalker.walkFunctional(path,
+                                          callbackFunctionFile=None,
+                                          callbackFunctionDir=callbackFunctionDir,
+                                          arg=[path, actors_paths, "", ""],
+                                          callbackForMatchDir=callbackForMatchDir,
+                                          callbackForMatchFile=lambda x, y: False)
 
         for ppath in actors_paths:
             print("upgrade:%s" % ppath)

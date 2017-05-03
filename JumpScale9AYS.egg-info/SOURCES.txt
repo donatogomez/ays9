@@ -4,3 +4,4 @@ JumpScale9AYS.egg-info/SOURCES.txt
 JumpScale9AYS.egg-info/dependency_links.txt
 JumpScale9AYS.egg-info/requires.txt
 JumpScale9AYS.egg-info/top_level.txt
+cmds/ays

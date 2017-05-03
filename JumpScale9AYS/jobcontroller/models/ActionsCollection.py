@@ -1,9 +1,8 @@
 from js9 import j
-from .ActionModel import ActionModel
-
 import capnp
+from JumpScale9AYS.jobcontroller.models.ActionModel import ActionModel
 from JumpScale9AYS.jobcontroller.models import model_job_capnp as ModelCapnp
-from JumpScale9.data.capnp.ModelBase import ModelBaseCollection
+from JumpScale9Lib.data.capnp.ModelBase import ModelBaseCollection
 
 
 class ActionsCollection(ModelBaseCollection):
@@ -19,7 +18,7 @@ class ActionsCollection(ModelBaseCollection):
         self.namespace_prefix = 'jobs'
         category = "Action"
         namespace = "%s:%s" % (self.namespace_prefix, category.lower())
-        db = j.servers.kvs.getRedisStore(namespace, namespace, **j.core.atyourservice.config['redis'])
+        db = j.data.kvs.getMemoryStore(namespace, namespace)
         super().__init__(ModelCapnp.Action, category=category, namespace=namespace, modelBaseClass=ActionModel, db=db, indexDb=db)
 
     def new(self):

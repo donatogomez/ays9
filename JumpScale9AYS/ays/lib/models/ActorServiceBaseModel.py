@@ -1,9 +1,5 @@
-from collections import OrderedDict
-
-import msgpack
 from js9 import j
-
-ModelBaseWithData = j.data.capnp.getModelBaseClassWithData()
+from JumpScale9Lib.data.capnp.ModelBase import ModelBaseWithData
 
 
 class ActorServiceBaseModel(ModelBaseWithData):
@@ -78,7 +74,6 @@ class ActorServiceBaseModel(ModelBaseWithData):
         if key != "":
             action_obj.actionKey = key
 
-        need2save = False
         if action_obj.period != period:
             action_obj.period = period
             self.changed = True

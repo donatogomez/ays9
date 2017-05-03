@@ -10,14 +10,10 @@ setup(
     license='Apache',
     packages=['JumpScale9AYS'],
     install_requires=[
-        'redis',
-        'colorlog',
-        'pytoml',
-        'ipython',
-        'colored_traceback',
-        'pystache',
-        'libtmux',
-        'httplib2',
-        'netaddr'
-    ]
+        'g8core',
+        'sanic>=0.5.2',
+        'jsonschema',
+        'python-jose'
+    ],
+    scripts=['cmds/ays']
 )

@@ -1,0 +1,673 @@
+#!/usr/bin/env python
+
+# Click library has some problems with python3 when it comes to unicode: http://click.pocoo.org/5/python3/#python3-surrogates
+# to fix this we need to set the environ variables to export the locales
+import os
+os.environ['LC_ALL'] = 'C.UTF-8'
+os.environ['LANG'] = 'C.UTF-8'
+
+from js9 import j
+import io
+import time
+import click
+from requests.exceptions import HTTPError
+
+repo = None
+ayscl = j.clients.atyourservice.get()
+
+
+def _current_repo_name():
+    return j.sal.fs.getBaseName(j.sal.fs.getcwd())
+
+
+def _extract_error(resp):
+    if isinstance(resp, HTTPError):
+        if resp.response.headers['Content-type'] == 'application/json':
+            content = resp.response.json()
+            return content.get('error', resp.response.text)
+        return resp.response.text
+    raise resp
+
+
+def print_date(epoch):
+    if epoch == 0:
+        return "never"
+    return j.data.time.epoch2HRDateTime(epoch)
+
+# main CLI
+
+
+@click.group()
+def cli():
+    pass
+
+@cli.command()
+def reload():
+    """
+    Reload AYS objects in memory
+    """
+    try:
+        ayscl.api.ays.reload(data=None)
+        print ("AYS reloaded")
+    except Exception as e:
+        print("Error during reload: {}".format(_extract_error(e)))
+
+# AYS repository related group of commands
+@cli.group()
+def repo():
+    """
+    Group of commands about AYS repositories
+    """
+    pass
+
+
+@repo.command()
+@click.option('--name', '-n', default=None, help='name of the new AYS repo you want to create')
+@click.option('--git', '-g', default=None, help='URL of the git repository to attach to this AYS repository')
+def create(name, git):
+    """
+    create a new AYS repository
+    """
+    if git is None:
+        print("you have to specify an gi repository using --git")
+        return
+
+    if name is None:
+        name = j.sal.fs.getBaseName(j.sal.fs.getcwd())
+
+    data = j.data.serializer.json.dumps({'name': name, 'git_url': git})
+
+    try:
+        resp = ayscl.api.ays.createRepository(data=data)
+        print("AYS repository created at {}".format(resp.json()['path']))
+    except Exception as e:
+        print("Error during creation of the repository: {}".format(_extract_error(e)))
+
+
+@repo.command()
+def list():
+    """
+    List all known repositories
+    """
+    print("AYS Repositories: ")
+
+    try:
+        resp = ayscl.api.ays.listRepositories()
+        repos = resp.json()
+        for repo in sorted(repos, key=lambda r: r['name']):
+            print(repo['path'])
+    except Exception as e:
+        print("Error during listing of the repositories: {}".format(_extract_error(e)))
+
+
+@repo.command()
+def destroy():
+    """
+    reset all services & recipe's in current repo (DANGEROUS)
+    all instances will be lost !!!
+
+    make sure to do a commit before you do a distroy, this will give you a chance to roll back.
+    """
+    try:
+        resp = ayscl.api.ays.destroyRepository(data=None, repository=_current_repo_name())
+        print("repository destroyed")
+    except Exception as e:
+        print("Error while destroying repository: {}".format(_extract_error(e)))
+
+@repo.command()
+def delete():
+    """
+    Delete EVERY THING in the Repo (DANGEROUS)
+    all INSTANCES and BLUEPRINTS will be lost !!!
+
+    make sure to do a commit before you do a delete, this will give you a chance to roll back.
+    """
+    try:
+        resp = ayscl.api.ays.deleteRepository(repository=_current_repo_name())
+        print("repository deleted")
+    except Exception as e:
+        print("Error while deleting repository: {}".format(_extract_error(e)))
+
+
+# AYS service related group of commands
+@cli.group()
+def service():
+    """
+    Group of commands about services
+    """
+    pass
+
+
+@service.command()
+@click.option('--role', '-r', default='')
+@click.option('--name', '-n', default='')
+def list(role, name):
+    """
+    The list command lists all service instances with specific role and instance name.
+    """
+    try:
+        resp = ayscl.api.ays.listServices(_current_repo_name())
+        services = resp.json()
+        print("Installed services:")
+        print("-------------------")
+        for s in sorted(services, key=lambda service: '{role}!{name}'.format(**service)):
+            if role and s['role'] != role:
+                continue
+            if name and s['name'] != name:
+                continue
+            print("%s!%s" % (s['role'], s['name']))
+    except Exception as e:
+        print("Error while listing services: {}".format(_extract_error(e)))
+
+
+@service.command()
+@click.option('--role', '-r', default='')
+@click.option('--name', '-n', default='')
+# @click.option('--deep', default=False, is_flag=True, help='show producers and consumers recursivlely')
+def show(role, name):
+    '''
+    show information about a service
+    '''
+    def get_service(role, name):
+        try:
+            resp = ayscl.api.ays.getServiceByName(role=role, name=name, repository=_current_repo_name())
+            return resp.json()
+        except Exception as e:
+            print("Error while getting service: {}".format(_extract_error(e)))
+            return
+
+    try:
+        resp = ayscl.api.ays.listServices(_current_repo_name())
+    except Exception as e:
+        print("Error while listing services: {}".format(_extract_error(e)))
+        return
+
+    services = resp.json()
+    for service in services:
+        if role and service['role'] != role:
+            continue
+        if name and service['name'] != name:
+            continue
+
+        service = get_service(role=service['role'], name=service['name'])
+        print('\n')
+        print('---------------------------------------------------')
+        print("Service: %s - Role: %s" % (service['name'], service['role']))
+        color = 'red' if service['state'] == 'error' else 'green'
+        print(click.style("state : {}".format(service['state']), fg=color))
+        print("key : {}".format(service['key']))
+        print("\nInstance data:", end='')
+        instance_data = service['data']
+        if not instance_data:
+            print(" None")
+        else:
+            print('')
+            for k in sorted(instance_data):
+                print("- %s : %s" % (k, instance_data[k]))
+
+        print("\nParent:", end='')
+        if not service['parent']:
+            print(' None')
+        else:
+            print('')
+            print("{role}!{name}".format(**service['parent']))
+
+        print("\nChildren:", end='')
+        if len(service['children']) <= 0:
+            print(' None')
+        else:
+            print("")
+            for child in service['children']:
+                print("{role}!{name}".format(**child))
+
+        print("\nProducers:", end='')
+        if not service['producers']:
+            print(' None')
+        else:
+            print('')
+            for producer in service['producers']:
+                print("{role}!{name}".format(**producer))
+
+        print("\nConsumers:", end='')
+        if not service['consumers']:
+            print(' None')
+        else:
+            print('')
+            for producer in service['consumers']:
+                print("{role}!{name}".format(**producer))
+
+        print("\nRecurring actions:", end='')
+        have_reccuring = False
+        for action in service['actions']:
+            if action['recurring'] is None:
+                continue
+            print('')
+            print("%s: period:%5s last run:%s " % (action['name'], j.data.time.getSecondsInHR(
+                action['recurring']['period']), print_date(action['recurring']['last_run'])))
+            have_reccuring = True
+        if not have_reccuring:
+            print(" None")
+
+        print("\nEvent filters:", end='')
+        if not service['events']:
+            print(' None')
+        else:
+            print('')
+            for event_filter in service['events']:
+                print('- actions: %s' % ','.join(event_filter['actions']))
+                print('  command: %s' % event_filter['command'])
+                print('  channel: %s' % event_filter['channel'])
+                print('  tags: %s' % ','.join(event_filter['tags']))
+
+
+@service.command()
+@click.option('--role', '-r', default="", help='optional role of the service')
+@click.option('--name', '-n', default="", help='optional name of the service')
+def state(role, name):
+    """
+    Print the state of the selected services. If not role or instances specified, all services from the repository are selected
+    """
+    def get_service(role, name):
+        try:
+            resp = ayscl.api.ays.getServiceByName(role=role, name=name, repository=_current_repo_name())
+            return resp.json()
+        except Exception as e:
+            print("Error while getting service: {}".format(_extract_error(e)))
+            return
+
+    try:
+        resp = ayscl.api.ays.listServices(_current_repo_name())
+    except Exception as e:
+        print("Error while listing services: {}".format(_extract_error(e)))
+        return
+
+    services = resp.json()
+    services = sorted(services, key=lambda s: s['role'])
+    for service in services:
+        if role and service['role'] != role:
+            continue
+        if name and service['name'] != name:
+            continue
+
+        print('State of service : %s!%s' % (service['role'], service['name']))
+        service = get_service(service['role'], service['name'])
+        for action in service['actions']:
+            print("\t%-25s : %s" % (action['name'], action['state']))
+
+
+@service.command()
+@click.option('--role', '-r', default="", help='optional role for the service you want to delete')
+@click.option('--name', '-n', default="", help='optional name of the service')
+@click.option('--yes','-y','--assume-yes',default=False, is_flag=True,  help='Automatic yes to prompts. Assume "yes" as answer to all prompts and run non-interactively')
+def delete(role, name, assume_yes):
+    """
+    Delete a service and all its children
+    Be carefull with this action, there is no come back once a service is deleted.
+    """
+
+    def get_service(role, name):
+        try:
+            resp = ayscl.api.ays.getServiceByName(role=role, name=name, repository=_current_repo_name())
+            return resp.json()
+        except Exception as e:
+            print("Error while getting service: {}".format(_extract_error(e)))
+            return
+
+    try:
+        resp = ayscl.api.ays.listServices(_current_repo_name())
+    except Exception as e:
+        print("Error while listing services: {}".format(_extract_error(e)))
+        return
+
+    filterd = []
+    for service in resp.json():
+        if role and service['role'] != role:
+            continue
+        if name and service['name'] != name:
+            continue
+        filterd.append(service)
+
+    services = sorted(filterd, key=lambda s: s['role'])
+
+    print("Services selected for deletion:")
+    for service in services:
+        service = get_service(role=service['role'], name=service['name'])
+        if service is None:
+            return
+
+        print("- {role}!{name}".format(**service))
+        if service['children']:
+            print('  child that will also be deleted:')
+            if service['children']:
+                for child in service['children']:
+                    print("  - {role}!{name}".format(**child))
+            else:
+                print("   None")
+
+    if not assume_yes:
+        resp = j.tools.console.askYesNo('\nAre you sure you want to delete ?', default=True)
+        if resp is False:
+            return
+
+    for service in services:
+        resp = ayscl.api.ays.deleteServiceByName(name=service['name'], role=service[
+                                                 'role'], repository=_current_repo_name())
+        try:
+            print('service {role}!{name} deleted'.format(**service))
+        except Exception as e:
+            print("error during deletion of service {role}!{name}: {error}".format(
+                **service, error=_extract_error(e)))
+
+
+@cli.group()
+def actor():
+    """
+    Group of commands about actors
+    """
+
+
+@actor.command()
+def list():
+    """
+    list all actor of the repository
+    """
+    try:
+        resp = ayscl.api.ays.listActors(repository=_current_repo_name())
+        print("Installed actors:")
+        print("-------------------")
+
+        for actor in sorted(resp.json(), key=lambda x: x['name']):
+            print("{name}".format(**actor))
+    except Exception as e:
+        print("error during listing of actors: {}".format(_extract_error(e)))
+
+
+@actor.command()
+@click.option('--name', '-n', default=None, help='name of the actor to update')
+@click.option('--reschedule', '-r', is_flag=True, default=False, help='reschedule actions in error state after update')
+def update(name, reschedule):
+    """
+    Update actor to a new version.
+    Any change detected in the actor will be propagated to the services and processChange method will be
+    called all the way from actor to service instances.
+
+    if the --reschedule option is given, all the action that were in `error` state will remain in error state after the update
+    instead of beeing switched to state changed
+    """
+    names = []
+    if name is None:
+        try:
+            resp = ayscl.api.ays.listActors(repository=_current_repo_name())
+            names = [a['name'] for a in resp.json()]
+        except Exception as e:
+            print("error during listing of actors: {}".format(_extract_error(e)))
+            return
+    else:
+        names = [name]
+
+    for name in names:
+        try:
+            query_params = {'reschedule': reschedule}
+            resp = ayscl.api.ays.updateActor(data='', actor=name, repository=_current_repo_name(), query_params=query_params)
+            print("actor {} updated".format(name))
+        except Exception as e:
+            print("error during update of actor {}: {}".format(name, _extract_error(e)))
+            return
+
+
+@cli.group()
+def template():
+    """
+    Group of commands about actor templates
+    """
+
+
+@template.command()
+def list():
+    """
+    List all actor template availale to be used in a blueprint
+    """
+    try:
+        resp = ayscl.api.ays.listTemplates(repository=_current_repo_name())
+    except Exception as e:
+        print("error during listing of templates: {}".format(_extract_error(e)))
+        return
+
+    for template in sorted(resp.json(),  key=lambda x: x['name']):
+        print("{name}".format(**template))
+
+
+@cli.group()
+def run():
+    """
+    Group of commands about runs
+    """
+
+
+def _print_run(run, logs=False):
+    def format_log(log):
+        return " {datetime} {category}: {log}\n".format(**log, datetime=print_date(log['epoch']))
+
+    out = io.StringIO()
+    out.write(click.style("RUN:{}\n".format(run['key']), fg='green', underline=True))
+    # out.write(click.style("-------\n", fg='green'))
+    for step in run['steps']:
+        # out.write(click.style("## step:{}\n\n".format(step['number']), fg='green'))
+        out.write(click.style("step:{number} ({state})\n".format(**step), fg='green', underline=True))
+        for job in step['jobs']:
+            out.write("- {actor_name:25} {service_name:30} | {action_name:15} ({state})\n".format(**job))
+            if logs:
+                out.write(click.style("\tlogs:", fg='blue'))
+                if len(job['logs']) <= 0:
+                    out.write("  none\n")
+                else:
+                    out.write("\n")
+
+                # import ipdb; ipdb.set_trace()
+                for log in job['logs']:
+                    if log['log']:
+                        out.write(j.data.text.indent(format_log(log) + '\n', nspaces=8))
+    print(out.getvalue())
+
+
+@run.command()
+@click.option('--yes','-y','--assume-yes',default=False, is_flag=True,  help='Automatic yes to prompts. Assume "yes" as answer to all prompts and run non-interactively')
+@click.option('--force', default=False, is_flag=True, help='force execution even if no change')
+@click.option('--debug', default=False, is_flag=True, help='enable debug in jobs')
+@click.option('--profile', default=False, is_flag=True, help='enable profiling of the jobs')
+@click.option('--follow', '-f', is_flag=True, help='follow run execution')
+def create(assume_yes, force, debug, profile, follow):
+    """
+    Look for all action with a state 'schedule', 'changed' or 'error' and create a run.
+    A run is an collection of actions that will be run on the repository.
+    """
+    print("Creation of the run...")
+    try:
+        resp = ayscl.api.ays.createRun(data=None, repository=_current_repo_name(), query_params={'simulate': True})
+    except Exception as e:
+        print("Error during creation of the run: {}".format(_extract_error(e)))
+        return
+
+    run = resp.json()
+    if len(run['steps']) <= 0:
+        print("Nothing to do.")
+        return
+
+    _print_run(run)
+
+    if not assume_yes:
+        resp = j.tools.console.askYesNo('Do you want to execute this run ?', True)
+        if resp is False:
+            runid = run['key']
+            ayscl.api.ays.deleteRun(runid=runid, repository=_current_repo_name())
+            return
+
+    try:
+        resp = ayscl.api.ays.executeRun(data=None, runid=run['key'], repository=_current_repo_name())
+    except Exception as e:
+        print("error during execution of the run: {}".format(_extract_error(e)))
+        return
+
+    print("execution of the run started: {}".format(run['key']))
+    if follow:
+        running = True
+        while running:
+            try:
+                resp = ayscl.api.ays.getRun(runid=run['key'], repository=_current_repo_name())
+            except Exception as e:
+                print("Error during retreive of the run {}: {}".format(key, _extract_error(e)))
+                return
+
+            run = resp.json()
+            j.tools.console.cls()
+            print("Current state of the run:\n")
+            _print_run(run)
+            running = False
+            for step in resp.json()['steps']:
+                for job in step['jobs']:
+                    if job['state'] == 'running':
+                        running = True
+            if running:
+                time.sleep(2)
+
+
+@run.command()
+def list():
+    """
+    List all previous run key sorted by creation date
+    """
+    try:
+        resp = ayscl.api.ays.listRuns(repository=_current_repo_name())
+    except Exception as e:
+        print("Error during listing of the runs: {}".format(_extract_error(e)))
+        return
+    runs = resp.json()
+    runs = sorted(runs, key=lambda x: x['epoch'])
+    for run in runs:
+        print("run :{date} {key} ({state})".format(**run, date=print_date(run['epoch'])))
+
+
+@run.command()
+@click.option('--key', '-k', default=None, help='key of the run to show')
+@click.option('--logs', '-l', default=False, is_flag=True, help='show logs of the jobs')
+def show(key, logs):
+    """
+    show detail of a run.
+
+    If the --key option is not given, show the detail of the last run.
+    if --logs option is given, also show the logs of each job.
+    """
+    if key is None:
+        try:
+            resp = ayscl.api.ays.listRuns(repository=_current_repo_name())
+        except Exception as e:
+            print("Error during listing of the runs: {}".format(_extract_error(e)))
+            return
+        runs = resp.json()
+        runs = sorted(runs, key=lambda x: x['epoch'])
+        if not runs:
+            print ('no runs to show')
+            return
+        key = runs[-1]['key']
+
+    try:
+        resp = ayscl.api.ays.getRun(runid=key, repository=_current_repo_name())
+    except Exception as e:
+        print("Error during retreive of the run {}: {}".format(key, _extract_error(e)))
+        return
+
+    _print_run(resp.json(), logs=logs)
+
+
+@cli.command()
+@click.option('--bind', '-b', default='127.0.0.1', help='listening address')
+@click.option('--port', '-p', default=5000, help='listening port')
+@click.option('--log', '-l', default="info", help='set log level (error, warning, info, debug)')
+def start(bind, port, log):
+    """
+    start an ays service in tmux
+    """
+    j.core.atyourservice.start(bind=bind, port=port, log=log)
+# AYS service related group of commands
+
+
+@cli.command()
+@click.argument('name', default='')
+def blueprint(name):
+    """
+    will process the blueprint(s) pointed by name
+    if name is empty    then all blueprints found in $aysdir/blueprints will be processed
+    """
+    if name == '':
+        try:
+            resp = ayscl.api.ays.listBlueprints(_current_repo_name())
+        except Exception as e:
+            print("error during listing of blueprints: {}".format(_extract_error(e)))
+            return
+
+        blueprints = resp.json()
+        names = [bp['name'] for bp in blueprints]
+    else:
+        names = [name]
+
+    for name in sorted(names):
+        try:
+            resp = ayscl.api.ays.executeBlueprint(data=None, blueprint=name, repository=_current_repo_name())
+            print("blueprint {} executed".format(name))
+        except Exception as e:
+            print('error during execution of the blueprint {}: {}'.format(name, _extract_error(e)))
+            return
+
+# AYS repository related group of commands
+@cli.command()
+@click.argument('action')
+@click.option('--yes','-y','--assume-yes',default=False, is_flag=True,  help='Automatic yes to prompts. Assume "yes" as answer to all prompts and run non-interactively')
+@click.option('--actor', '-a', help='filter actor by name')
+@click.option('--service', '-s', help='filter service by name')
+@click.option('--force', '-f', default=False, is_flag=True, help='force action')
+def action(action, assume_yes, actor, service, force):
+    """
+    Shortcut to execute actions blocks
+
+    this command creates a temporary blueprint containing only an action block,
+    execute the blueprint, then delete it
+
+    e.g: ays action install -a node -s main
+    will generate the blueprint
+    actions:\n
+       - action: install\n
+         actor: node\n
+         service: main\n
+    """
+    action_block = {'actions':[{'action': action}]}
+    if actor:
+        action_block['actions'][0]['actor'] = actor
+    if service:
+        action_block['actions'][0]['service'] = service
+    action_block['actions'][0]['force'] = force
+
+    name = 'action_tmp_{}'.format(j.data.time.epoch)
+    bp_str = j.data.serializer.yaml.dumps(action_block)
+    bp = {
+        'name': name,
+        'content': bp_str
+    }
+
+    if not assume_yes:
+        print(bp_str)
+        resp = j.tools.console.askYesNo('Do you want to execute this action block ?', True)
+        if resp is False:
+            return
+
+    try:
+        ayscl.api.ays.createBlueprint(bp, _current_repo_name())
+        resp = ayscl.api.ays.executeBlueprint(data=None, blueprint=name, repository=_current_repo_name())
+        ayscl.api.ays.deleteBlueprint(blueprint=name, repository=_current_repo_name())
+        print("blueprint {} executed".format(name))
+    except Exception as e:
+        print('error during execution of the blueprint {}: {}'.format(name, _extract_error(e)))
+        return
+
+
+if __name__ == '__main__':
+    cli()

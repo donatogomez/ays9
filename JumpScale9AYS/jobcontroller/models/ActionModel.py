@@ -1,6 +1,5 @@
 from js9 import j
-
-from JumpScale9.data.capnp.ModelBase import ModelBase
+from JumpScale9Lib.data.capnp.ModelBase import ModelBase
 
 
 class ActionModel(ModelBase):

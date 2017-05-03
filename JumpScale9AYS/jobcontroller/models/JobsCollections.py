@@ -1,9 +1,8 @@
 from js9 import j
-from .JobModel import JobModel
-
 import capnp
+from JumpScale9AYS.jobcontroller.models.JobModel import JobModel
 from JumpScale9AYS.jobcontroller.models import model_job_capnp as ModelCapnp
-from JumpScale9.data.capnp.ModelBase import ModelBaseCollection
+from JumpScale9Lib.data.capnp.ModelBase import ModelBaseCollection
 
 
 class JobsCollection(ModelBaseCollection):
@@ -17,7 +16,7 @@ class JobsCollection(ModelBaseCollection):
         self.namespace_prefix = 'jobs'
         category = 'Job'
         namespace = "%s:%s" % (self.namespace_prefix, category.lower())
-        db = j.servers.kvs.getRedisStore(namespace, namespace, **j.core.atyourservice.config['redis'])
+        db = j.data.kvs.getMemoryStore(namespace, namespace)
         super().__init__(ModelCapnp.Job, category=category, namespace=namespace, modelBaseClass=JobModel, db=db, indexDb=db)
 
     def new(self):

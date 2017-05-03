@@ -5,13 +5,13 @@ NORMAL_RUN_PRIORITY = 1
 ERROR_RUN_PRIORITY = 10
 
 RETRY_DELAY = {
-    1: 10,  # 30sec
-    2: 60,  # 1min
-    3: 300,  # 5min
-    4: 600,  # 10min
-    5: 1800,  # 30min
+    1: 10,  # 10sec
+    2: 30,  # 30sec
+    3: 60,  # 1min
+    4: 300,  # 5min
+    5: 600,  # 10min
     6: 1800,  # 30min
-}  # total: 1h 16min 30sec
+}  # total: 46min 10sec
 
 
 class RunScheduler:
@@ -127,7 +127,12 @@ class RunScheduler:
                 self.logger.info("action {} reached max retry, not rescheduling again.".format(action))
                 return
 
-            delay = RETRY_DELAY[action.errorNr]
+            # if we are in dev mode, always reschedule after 10 sec
+            if j.atyourservice.dev_mode:
+                delay = RETRY_DELAY[1]
+            else:
+                delay = RETRY_DELAY[action.errorNr]
+
             # make sure we don't reschedule with a delay smaller then the timeout of the job
             if action.timeout > 0 and action.timeout > delay:
                 delay = action.timeout

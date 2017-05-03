@@ -13,7 +13,7 @@ class Service:
         self._schema = None
         self._path = ""
         self._loop = loop or asyncio.get_event_loop()
-        self._recurring_tasks = {}  # for recurring jobs
+        self._recurring_tasks = {} # for recurring jobs
 
         self.aysrepo = aysrepo
         self.logger = j.logger.get('j.core.atyourservice.service')
