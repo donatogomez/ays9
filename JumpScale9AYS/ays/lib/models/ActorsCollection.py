@@ -14,7 +14,7 @@ class ActorsCollection(ModelBaseCollection):
     def __init__(self, repository):
         self.repository = repository
         namespace = "ays:%s:actor" % repository.name
-        db = j.servers.kvs.getMemoryStore(namespace, namespace)
+        db = j.data.kvs.getMemoryStore(namespace, namespace)
         self.logger = j.logger.get('j.core.atyourservice.actor-collection')
         # cache for the actors objects
         self.actors = {}

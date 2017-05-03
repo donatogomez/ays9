@@ -14,7 +14,7 @@ class ServicesCollection(ModelBaseCollection):
     def __init__(self, repository):
         self.repository = repository
         namespace = "ays:%s:service" % repository.name
-        db = j.servers.kvs.getMemoryStore(namespace, namespace)
+        db = j.data.kvs.getMemoryStore(namespace, namespace)
         self.services = {}
         self.logger = j.logger.get('j.core.atyourservice.service-collection')
 

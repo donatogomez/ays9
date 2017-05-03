@@ -142,7 +142,7 @@ def process_event_(service, args):
 #
 #     key = "%s:%s" % (username, j.data.idgenerator.generateGUID())
 #
-#     out_evt = j.data.models.cockpit_event.Telegram()
+#     out_evt = j.data.models_cockpit_event.Telegram()
 #     out_evt.io = 'output'
 #     out_evt.action = 'service.communication'
 #     out_evt.args = {
