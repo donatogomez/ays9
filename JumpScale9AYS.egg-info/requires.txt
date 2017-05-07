@@ -1,4 +1,0 @@
-g8core
-sanic>=0.5.2
-jsonschema
-python-jose
