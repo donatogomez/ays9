@@ -6,6 +6,7 @@ import os
 
 def _post_install(libname, libpath):
     from JumpScale9 import j
+    import os
     j.tools.jsloader.copyPyLibs()
 
     # ensure plugins section in config
@@ -16,13 +17,15 @@ def _post_install(libname, libpath):
     j.application.config['plugins'][libname] = libpath
 
     moduleList = {}
+    gigdir = os.environ.get('GIGDIR', '/root/gig')
+    mounted_lib_path = os.path.join(gigdir, 'python_libs')
 
     for name, path in j.application.config['plugins'].items():
         if j.sal.fs.exists(path, followlinks=True):
             moduleList = j.tools.jsloader.findModules(path=path, moduleList=moduleList)
             # link libs to location for hostos
             j.do.copyTree(path,
-                          "/root/gig/python_libs/%s" % libname,
+                          os.path.join(mounted_lib_path, libname),
                           overwriteFiles=True,
                           ignoredir=['*.egg-info',
                                      '*.dist-info',
