@@ -1,8 +1,5 @@
 from js9 import j
-
-from JumpScale9.data.capnp.ModelBase import ModelBase
-
-import importlib
+from JumpScale9Lib.data.capnp.ModelBase import ModelBase
 import msgpack
 from collections import OrderedDict
 

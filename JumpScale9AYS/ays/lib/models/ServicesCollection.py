@@ -1,6 +1,6 @@
 from js9 import j
 from JumpScale9AYS.ays.lib.models.ServiceModel import ServiceModel
-from JumpScale9.data.capnp.ModelBase import ModelBaseCollection
+from JumpScale9Lib.data.capnp.ModelBase import ModelBaseCollection
 import capnp
 from JumpScale9AYS.ays.lib import model_capnp as ModelCapnp
 

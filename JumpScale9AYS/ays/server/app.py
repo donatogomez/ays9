@@ -1,7 +1,7 @@
 from sanic import Sanic
 
-from .server.ays_if import ays_if
-from .server.webhooks_if import webhooks_if
+from JumpScale9AYS.ays.server.ays_if import ays_if
+from JumpScale9AYS.ays.server.webhooks_if import webhooks_if
 
 app = Sanic(__name__)
 

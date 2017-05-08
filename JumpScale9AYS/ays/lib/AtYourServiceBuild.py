@@ -11,7 +11,7 @@ and just pass the build service as argument to our methods
 def ensure_container(service, root):
     """
     @param service: service object
-    @service type: .Service
+    @service type: JumpScale9AYS.ays.lib.Service.Service
     @param root: specify if this container need to be created from a previous build image or if it's a root docker build
     @root type: boolean
 

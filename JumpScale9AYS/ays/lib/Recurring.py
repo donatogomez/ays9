@@ -17,15 +17,26 @@ class RecurringTask:
     async def _run(self):
         try:
             while self.started:
+                # create job
                 self._job = self.service.getJob(actionName=self.action)
                 await self._job.execute()
 
+                # compute how long we need to sleep before next execution
                 action_info = self.service.model.actions[self.action]
                 elapsed = (j.data.time.epoch - action_info.lastRun)
                 sleep = action_info.period - elapsed
                 if sleep < 0:
                     sleep = 0
+
+                # wait for right time
                 await asyncio.sleep(sleep)
+
+                # execute
+                await self._job.execute()
+
+                # update last exection time
+                action_info.lastRun = j.data.time.epoch
+
         except asyncio.CancelledError:
             self.logger.info("recurring task for {}:{} is cancelled".format(self.service, self.action))
             if self._job:
@@ -41,7 +52,8 @@ class RecurringTask:
         self.started = False
         # cancel recurring task
         if self._future:
-            self._future.cancel()
+            self._loop.call_soon_threadsafe(self._future.cancel)
+
 
 
 if __name__ == '__main__':

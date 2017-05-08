@@ -1,9 +1,8 @@
 from js9 import j
-from .ActionModel import ActionModel
-
 import capnp
+from JumpScale9AYS.jobcontroller.models.ActionModel import ActionModel
 from JumpScale9AYS.jobcontroller.models import model_job_capnp as ModelCapnp
-from JumpScale9.data.capnp.ModelBase import ModelBaseCollection
+from JumpScale9Lib.data.capnp.ModelBase import ModelBaseCollection
 
 
 class ActionsCollection(ModelBaseCollection):
