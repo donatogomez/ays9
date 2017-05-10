@@ -80,12 +80,12 @@ setup(
     license='Apache',
     packages=['JumpScale9AYS'],
     install_requires=[
-        'JumpScale9>=9.0.0',
-        'JumpScale9Lib>=9.0.0',
+        'JumpScale9==9.0.0',
+        'JumpScale9Lib==9.0.0a1',
         'g8core>=1.0.0',
-        'jsonschema>=2.6.0',
-        'python-jose>=1.3.2'
-        'sanic>=0.5.2',
+        'jsonschema==2.6.0',
+        'python-jose==1.3.2',
+        'sanic==0.5.2',
     ],
     cmdclass={
         'install': install,
