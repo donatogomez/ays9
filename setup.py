@@ -5,7 +5,7 @@ import os
 
 
 def _post_install(libname, libpath):
-    from JumpScale9 import j
+    from js9 import j
     import os
     j.tools.jsloader.copyPyLibs()
 
@@ -80,12 +80,12 @@ setup(
     license='Apache',
     packages=['JumpScale9AYS'],
     install_requires=[
-        'JumpScale9==9.0.0',
-        'JumpScale9Lib==9.0.0a1',
+        'JumpScale9>=9.0.0',
+        'JumpScale9Lib>=9.0.0',
         'g8core>=1.0.0',
-        'jsonschema==2.6.0',
-        'python-jose==1.3.2',
-        'sanic==0.5.2',
+        'jsonschema>=2.6.0',
+        'python-jose>=1.3.2',
+        'sanic>=0.5.2',
     ],
     cmdclass={
         'install': install,
