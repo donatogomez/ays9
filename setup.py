@@ -7,49 +7,20 @@ import os
 def _post_install(libname, libpath):
     from js9 import j
     import os
-    j.tools.jsloader.copyPyLibs()
 
     # ensure plugins section in config
     if 'plugins' not in j.application.config:
         j.application.config['plugins'] = {}
 
     # add this plugin to the config
-    j.application.config['plugins'][libname] = libpath
+    c = j.core.state.configGet('plugins', defval={})
+    c[libname] = libpath
+    j.core.state.configSet('plugins', c)
 
-    moduleList = {}
-    gigdir = os.environ.get('GIGDIR', '/root/gig')
-    mounted_lib_path = os.path.join(gigdir, 'python_libs')
+    print("****:%s:%s" % (libname, libpath))
 
-    for name, path in j.application.config['plugins'].items():
-        if j.sal.fs.exists(path, followlinks=True):
-            moduleList = j.tools.jsloader.findModules(path=path, moduleList=moduleList)
-            # link libs to location for hostos
-            j.do.copyTree(path,
-                          os.path.join(mounted_lib_path, libname),
-                          overwriteFiles=True,
-                          ignoredir=['*.egg-info',
-                                     '*.dist-info',
-                                     "*JumpScale*",
-                                     "*Tests*",
-                                     "*tests*"],
-
-                          ignorefiles=['*.egg-info',
-                                       "*.pyc",
-                                       "*.so",
-                                       ],
-                          rsync=True,
-                          recursive=True,
-                          rsyncdelete=True,
-                          createdir=True)
-
-    # DO NOT AUTOPIP the deps are now installed while installing the libs
-    j.application.config["system"]["autopip"] = False
-    j.application.config["system"]["debug"] = True
-
-    j.tools.jsloader.generate(path=path, moduleList=moduleList)
-    j.tools.jsloader.generate(path=path, moduleList=moduleList, codecompleteOnly=True)
-
-    j.do.initEnv()
+    j.tools.jsloader.generatePlugins()
+    j.tools.jsloader.copyPyLibs()
 
 
 class install(_install):
@@ -72,7 +43,7 @@ class develop(_develop):
 
 setup(
     name='JumpScale9AYS',
-    version='9.0.0a1',
+    version='9.0.0',
     description='Automation framework for cloud workloads ays lib',
     url='https://github.com/Jumpscale/ays9',
     author='GreenItGlobe',
@@ -82,7 +53,7 @@ setup(
     install_requires=[
         'JumpScale9>=9.0.0',
         'JumpScale9Lib>=9.0.0',
-        'g8core>=1.0.0',
+        'g8core>=1.0.0',  # is not ok, because strictly spoken this is not part of ays9
         'jsonschema>=2.6.0',
         'python-jose>=1.3.2',
         'sanic>=0.5.2',
