@@ -5,7 +5,7 @@ import os
 
 
 def _post_install(libname, libpath):
-    from js9 import j
+    from JumpScale9 import j
     import os
 
     # ensure plugins section in config
