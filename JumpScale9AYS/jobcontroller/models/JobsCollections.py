@@ -67,11 +67,12 @@ class JobsCollection(ModelBaseCollection):
             res.append(self.get(key))
         return res
 
+
     def getIndexFromKey(self, key):
         job = self.get(key)
         if job:
             ind = "%s:%s:%s:%s:%s:%s" % (job.dbobj.actorName, job.dbobj.serviceName,
-                                         job.dbobj.actionName, job.dbobj.state, job.dbobj.serviceKey, job.dbobj.lastModDate)
+                                     job.dbobj.actionName, job.dbobj.state, job.dbobj.serviceKey, job.dbobj.lastModDate)
             return ind
 
     def delete(self, actor="", service="", action="", state="", serviceKey="", fromEpoch=0, toEpoch=9999999999999):

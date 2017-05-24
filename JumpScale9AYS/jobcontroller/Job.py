@@ -10,6 +10,7 @@ import functools
 import logging
 import traceback
 
+
 colored_traceback.add_hook(always=True)
 
 
@@ -46,12 +47,11 @@ def _execute_cb(job, future):
             job.service.model.dbobj.state = 'error'
 
         ex = exception if exception is not None else TimeoutError()
-        eco = j.errorhandler.processPythonExceptionObject(ex)
+        eco = j.errorconditionhandler.processPythonExceptionObject(ex)
         job._processError(eco)
 
         if exception:
-            tb_lines = [line.rstrip('\n') for line in traceback.format_exception(
-                exception.__class__, exception, exception.__traceback__)]
+            tb_lines = [line.rstrip('\n') for line in traceback.format_exception(exception.__class__, exception, exception.__traceback__)]
             job.logger.error('\n'.join(tb_lines))
     else:
         job.state = 'ok'
@@ -62,9 +62,11 @@ def _execute_cb(job, future):
             job.service.model.dbobj.state = 'ok'
 
         job.logger.info("job {} done sucessfuly".format(str(job)))
-
-    job.save()
-
+    if service_action_obj.period > 0:  # recurring action.
+        job.model.delete()
+        del job
+    else:
+        job.save()
 
 @contextmanager
 def generate_profile(job):
@@ -99,8 +101,7 @@ class JobHandler(logging.Handler):
             category = 'alert'
         else:
             category = 'errormsg'
-        self._job_model.log(msg=record.getMessage(), level=record.levelno,
-                            category=category, epoch=int(record.created), tags='')
+        self._job_model.log(msg=record.getMessage(), level=record.levelno, category=category, epoch=int(record.created), tags='')
 
 
 class Job:
@@ -123,13 +124,33 @@ class Job:
     def __del__(self):
         self.cleanup()
 
+    @property
+    def _loop(self):
+        try:
+            loop = asyncio.get_event_loop()
+        except:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        return loop
+
     def cleanup(self):
         """
         clean the logger handler from the job object so it doesn't make the job stays in memory
         """
         self.logger.removeHandler(self._logHandler)
+        jc_log_refs = j.logger.logging.manager.loggerDict['j.core.jobcontroller']
+        job_log_refs = j.logger.logging.manager.loggerDict['j.core.jobcontroller.job']
+
+        # Properly cleaning logger referernces in logging module to avoid memory leaks.
+        jc_log_refs.loggerMap.pop(self.logger, None)
+        job_log_refs.loggerMap.pop(self.logger, None)
+        j.logger.logging.manager.loggerDict.pop(self.logger.name, None)
+
+        for h in self.logger.handlers:
+            self.logger.removeHandler(h)
         self._logHandler = None
         self.logger = None
+
 
     @property
     def action(self):
@@ -169,8 +190,7 @@ class Job:
                 try:
                     self._service = repo.serviceGetByKey(self.model.dbobj.serviceKey)
                 except j.exceptions.NotFound:
-                    self.logger.warning("job {} tried to access a non existing service {}".format(
-                        self, self.model.dbobj.serviceKey))
+                    self.logger.warning("job {} tried to access a non existing service {}".format(self,self.model.dbobj.serviceKey))
                     return None
         return self._service
 
@@ -256,10 +276,9 @@ class Job:
         # for now use default ThreadPoolExecutor
         if self.model.dbobj.debug is False:
             self.model.dbobj.debug = self.sourceLoader.source.find('ipdb') != -1 or \
-                self.sourceLoader.source.find('IPython') != -1
+                                     self.sourceLoader.source.find('IPython') != -1
 
-        loop = asyncio.get_event_loop()
-        self._future = loop.run_in_executor(None, self.method, self)
+        self._future = self._loop.run_in_executor(None, self.method, self)
         # register callback to deal with logs and state of the job after execution
         self._future.add_done_callback(functools.partial(_execute_cb, self))
 
@@ -278,6 +297,7 @@ class Job:
             self._future.remove_done_callback(_execute_cb)
             self._future.cancel()
             self.logger.info("job {} cancelled".format(self))
+
 
     def str_error(self, error):
         out = 'Error of %s:' % str(self)

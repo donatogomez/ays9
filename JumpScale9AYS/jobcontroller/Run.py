@@ -98,6 +98,7 @@ class Run:
         exeception to stop execution
         """
         self.state = 'running'
+        self.save()
         try:
             for step in self.steps:
 

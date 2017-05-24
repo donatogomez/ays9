@@ -84,8 +84,7 @@ class RunsCollection(ModelBaseCollection):
 
                     for step in model.dbobj.steps:
                         for job in step.jobs:
-                            j.core.jobcontroller.db.jobs.delete(
-                                job.actorName, job.serviceName, job.actionName, step.state.__str__(), job.serviceKey)
+                            j.core.jobcontroller.db.jobs.delete(job.actorName, job.serviceName, job.actionName, step.state.__str__(), job.serviceKey)
                 self._db.delete(key=key)
 
     def destroy(self):

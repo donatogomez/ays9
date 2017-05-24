@@ -13,7 +13,7 @@ class JobModel(ModelBase):
     def index(self):
         # put indexes in db as specified
         res = self.collection._index.list("%s:%s:%s:.*:%s:.*" % (self.dbobj.actorName, self.dbobj.serviceName,
-                                                                 self.dbobj.actionName, self.dbobj.serviceKey), returnIndex=True)
+                                          self.dbobj.actionName, self.dbobj.serviceKey), returnIndex=True)
         for matched in res:
             self.collection._index.index_remove(matched[0])
         ind = "%s:%s:%s:%s:%s:%s" % (self.dbobj.actorName, self.dbobj.serviceName,
@@ -142,9 +142,11 @@ class JobModel(ModelBase):
         # delete actual model object
         if self.collection._db.exists(self.key):
             index = "%s:%s:%s:%s:%s:%s" % (self.dbobj.actorName, self.dbobj.serviceName,
-                                           self.dbobj.actionName, self.dbobj.state, self.dbobj.serviceKey, self.dbobj.lastModDate)
+                                         self.dbobj.actionName, self.dbobj.state, self.dbobj.serviceKey, self.dbobj.lastModDate)
             self.collection._index.index_remove(keys=index)
             self.collection._db.delete(self.key)
+            self.logger.handlers = []
+            del self.logger
 
     def __repr__(self):
         out = self.dictJson + "\n"
