@@ -34,8 +34,8 @@ def test(job):
     try:
         expected_nr_of_jobs = 0
         curdir = os.getcwd()
-        j.core.atyourservice.reposDiscover()
-        repo = j.core.atyourservice.repoGet(j.sal.fs.joinPaths(j.dirs.codeDir, 'github/jumpscale/jumpscale_core8/tests/sample_repo_recurring'))
+        j.atyourservice.reposDiscover()
+        repo = j.atyourservice.repoGet(j.sal.fs.joinPaths(j.dirs.codeDir, 'github/jumpscale/jumpscale_core8/tests/sample_repo_recurring'))
         repos.append(repo)
         bp_path = j.sal.fs.joinPaths(repo.path, 'blueprints', 'test_recurring_actions_hanging_jobs.yaml')
         repo.blueprintExecute(path=bp_path)

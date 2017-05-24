@@ -16,7 +16,7 @@ class Service:
         self._recurring_tasks = {} # for recurring jobs
 
         self.aysrepo = aysrepo
-        self.logger = j.logger.get('j.core.atyourservice.service')
+        self.logger = j.logger.get('j.atyourservice.service')
 
     @classmethod
     async def init_from_actor(cls, aysrepo, actor, args, name):
@@ -156,8 +156,7 @@ class Service:
                     service="%s!%s" % (self.model.role, self.model.dbobj.name)))
 
         if errors:
-            msg = "The arguments passed to the service %s|%s contains the following errors: \n" % (
-                self.model.role, self.model.dbobj.name) + "\n".join(errors)
+            msg = "The arguments passed to the service %s|%s contains the following errors: \n" % (self.model.role, self.model.dbobj.name) + "\n".join(errors)
             msg += '\nDataSchema : {}'.format(self.model.dbobj.dataSchema)
             raise j.exceptions.Input(msg)
 
@@ -345,11 +344,13 @@ class Service:
             for producer in producers:
                 producer.model.consumerRemove(self)
                 producer.model.reSerialize()
+                producer.saveAll()
 
         for consumers in self.consumers.values():
             for consumer in consumers:
                 consumer.model.producerRemove(self)
                 consumer.model.reSerialize()
+                consumer.saveAll()
 
         self.model.delete()
         j.sal.fs.removeDirTree(self.path)
@@ -654,7 +655,8 @@ class Service:
             action_model.period = period
             self._ensure_recurring()
 
-        if not force and action_model.state == 'ok' and action not in ['start', 'stop']:
+
+        if not force and action_model.state == 'ok':
             self.logger.info("action %s already in ok state, don't schedule again" % action_model.name)
         else:
             self.logger.info('schedule action %s on %s' % (action, self))

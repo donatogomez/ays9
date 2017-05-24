@@ -30,7 +30,7 @@ def test(job):
     try:
         if j.sal.fs.exists(test_repo_path):
             j.sal.fs.removeDirTree(test_repo_path)
-        test_repo =  j.core.atyourservice.repoCreate(test_repo_path, 'git@github.com:0-complexity/ays_automatic_cockpit_based_testing.git')
+        test_repo =  j.atyourservice.repoCreate(test_repo_path, 'git@github.com:0-complexity/ays_automatic_cockpit_based_testing.git')
         bp_path = j.sal.fs.joinPaths(test_repo.path, 'blueprints', 'test_validate_delete_model_sample.yaml')
         j.sal.fs.copyFile(j.sal.fs.joinPaths(sample_bp_path), j.sal.fs.joinPaths(test_repo.path, 'blueprints'))
         test_repo.blueprintExecute(bp_path)

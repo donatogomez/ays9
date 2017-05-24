@@ -1,7 +1,8 @@
 from js9 import j
 from .Service import Service
-import capnp
 from JumpScale9AYS.ays.lib import model_capnp as ModelCapnp
+import capnp
+import msgpack
 
 
 class Actor():
@@ -12,7 +13,7 @@ class Actor():
         """
 
         self.aysrepo = aysrepo
-        self.logger = j.core.atyourservice.logger
+        self.logger = j.atyourservice.logger
         self._schema = None
         self.model = None
 
@@ -105,7 +106,6 @@ class Actor():
 
     def update(self, reschedule=False):
         template = self.aysrepo.templateGet(self.model.dbobj.name)
-
         self._initParent(template)
         self._initProducers(template)
         self._initFlists(template)
@@ -114,6 +114,10 @@ class Actor():
         self._initRecurringActions(template)
         self._initTimeouts(template)
         self._initEvents(template)
+
+        # stop services recurring actions
+        repo = self.aysrepo
+        svs = repo.servicesFind(actor=self.model.name)
 
         # hrd schema to capnp
         if self.model.dbobj.serviceDataSchema != template.schemaCapnpText:
@@ -126,6 +130,20 @@ class Actor():
 
         self.saveToFS()
         self.model.save()
+
+        for s in svs:
+            dirtyservice = False
+            for action in self.model.dbobj.actions:
+                if action.period > 0:
+                    dirtyservice = True
+                    act = s.model.actionGet(action.name)
+                    act.period = action.period
+                    act.log = action.log
+                    act.isJob = action.isJob
+                    act.timeout = action.timeout
+            if dirtyservice:
+                s.model.reSerialize()
+                s.saveAll()
 
     def _initFromTemplate(self, template):
         if self.model is None:
@@ -192,6 +210,8 @@ class Actor():
             action_model = self.model.actions[reccuring_info['action']]
             action_model.period = j.data.types.duration.convertToSeconds(reccuring_info['period'])
             action_model.log = j.data.types.bool.fromString(reccuring_info['log'])
+            ac = j.core.jobcontroller.db.actions.get(key=action_model.actionKey)
+            ac.save()
 
     def _initEvents(self, template):
         events = self.model.dbobj.init_resizable_list('eventFilters')
@@ -341,8 +361,8 @@ class Actor():
                 # not found
 
                 # check if we find the action in our default actions, if yes use that one
-                if actionname in j.core.atyourservice.baseActions:
-                    actionobj, actionmethod = j.core.atyourservice.baseActions[actionname]
+                if actionname in j.atyourservice.baseActions:
+                    actionobj, actionmethod = j.atyourservice.baseActions[actionname]
                     self.model.actionAdd(name=actionname, key=actionobj.key)
                 else:
                     if actionname == "input":
@@ -388,7 +408,6 @@ class Actor():
             ac.save()
         else:
             ac = j.core.jobcontroller.db.actions.get(key=ac.key)
-
         self.model.actionAdd(name=actionName, key=ac.key, isJob=('job' in amMethodArgs))
 
     def _check_change(self, actionObj, reschedule=False):

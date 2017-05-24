@@ -1,6 +1,24 @@
 from js9 import j
 from JumpScale9AYS.ays.lib.ActorTemplate import ActorTemplate
 import asyncio
+import inotify
+
+
+def get_root_template_repo_if_relevant(path):
+    template_repo = None
+    if 'templates' in path:
+        template_repo = path.split("templates")[0]
+    elif 'tests' in path:
+        template_repo = path.split("tests")[0]
+    elif 'actorTemplates' in path:
+        template_repo = path.split("actorTemplates")[0]
+    if template_repo is not None:
+        return template_repo if bool(searchActorTemplates(template_repo)) else None
+    return template_repo
+
+
+def is_it_a_template_repo(path):
+    return any(j.sal.fs.exists(j.sal.fs.joinPaths(path, i)) for i in ["templates", "tests", "actorTemplates"]) and bool(searchActorTemplates(path))
 
 
 def searchActorTemplates(path, is_global=False):
@@ -8,58 +26,14 @@ def searchActorTemplates(path, is_global=False):
     walk function that look recursively into 'path' after actor templates directories
     @returns: list of paths of directories containing actor tempaltes
     """
-    path = j.sal.fs.pathNormalize(path)
-
-    res = []
-
-    # check if this is already an actortemplate dir, if not no need to recurse
-    def isValidTemplate(path):
-        dirname = j.sal.fs.getBaseName(path)
-        tocheck = ['config.yaml', "schema.capnp", 'actions.py']
-        if dirname.startswith("_") or dirname.startswith("."):
-            return False
-        for aysfile in tocheck:
-            if j.sal.fs.exists('%s/%s' % (path, aysfile)):
-                if not dirname.startswith("_"):
-                    return True
-                else:
-                    return False
-        return False
-
-    def callbackFunctionDir(path, arg):
-        if arg[3] != "" and isValidTemplate(path):
-            arg[1].append(path)
-
-    def callbackForMatchDir(path, arg):
-        base = j.sal.fs.getBaseName(path)
-        if base.startswith("."):
-            return False
-        if base.startswith("ays_"):
-            arg[2] = path
-        elif arg[2] != "":
-            if not path.startswith(arg[2]):
-                arg[2] = ""
-                # because means that ays repo is no longer our parent
-
-        locations = ["templates", "tests"]
-        if not is_global:
-            locations.append("actorTemplates")
-        if base in locations:
-            arg[3] = path
-        elif arg[3] != "":
-            if not path.startswith(arg[3]):
-                arg[3] = ""
-                # because means that  is no longer our parent
-
-        depth = len(j.sal.fs.pathRemoveDirPart(path, arg[0]).split("/"))
-        if depth < 4:
-            return True
-        elif depth < 8 and arg[3] != "":
-            return True
-        return False
-
-    j.sal.fswalker.walkFunctional(path, callbackFunctionFile=None, callbackFunctionDir=callbackFunctionDir, arg=[path, res, "", ""],
-                                  callbackForMatchDir=callbackForMatchDir, callbackForMatchFile=lambda x, y: False)
+    res = set()
+    actortemplatessearch = ""
+    if not is_global:
+        actortemplatessearch = " -or -wholename '*actorTemplates/*actions.py' -or -wholename '*actorTemplates/*schema.capnp' -or -wholename '*actorTemplates/*config.yaml'"
+    cmd = """find %s \( -wholename '*templates/*actions.py' -or -wholename '*templates/*schema.capnp' -or -wholename '*templates/*config.yaml' -or -wholename '*tests/*actions.py' -or -wholename '*tests/*schema.capnp' -or -wholename '*tests/*config.yaml' %s \) -exec readlink -f {} \;""" % (path, actortemplatessearch)
+    rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
+    if rc == 0:
+        return out.splitlines()
     return res
 
 
@@ -67,24 +41,85 @@ class TemplateRepoCollection:
     """
     Class reponsible for search/load tempates repos
     """
+    FSDIRS = [j.dirs.CODEDIR]
 
     def __init__(self):
-        self.logger = j.logger.get('j.core.atyourservice')
+        self.logger = j.logger.get('j.atyourservice')
         self._loop = asyncio.get_event_loop()  # TODO: question why do we need this
         self._template_repos = {}
         self._load()
 
     def _load(self):
         self.logger.info("reload actor templates repos")
-        for path in searchActorTemplates(j.dirs.CODEDIR, is_global=True):
-            self.create(path=path)
+        return self.__load(j.dirs.CODEDIR)
 
-        for repo in list(self._template_repos.values()):
-            if not j.sal.fs.exists(repo.path):
-                self.logger.info("actor template repo {} doesn't exists anymore, unload".format(repo.path))
-                del(self._template_repos[repo.path])
+    def __load(self, path):
+        for path in searchActorTemplates(path, is_global=True):
+            template_repo = None
+            if 'templates' in path:
+                template_repo = path.split("templates")[0]
+            elif 'tests' in path:
+                template_repo = path.split("tests")[0]
+            elif 'actorTemplates' in path:
+                template_repo = path.split("actorTemplates")[0]
 
-        self._loop.call_later(60, self._load)
+            template_repo_name = j.sal.fs.getBaseName(template_repo)
+            if template_repo_name.startswith("_") or template_repo_name.startswith("."):
+                continue
+            self.create(path=template_repo)
+
+    def delete(self, repo_path):
+        self.logger.info("actor template repo {} doesn't exists anymore, unload".format(repo_path))
+        del(self._template_repos[repo_path])
+
+    def update(self, repo_path):
+        self.logger.info("actor template repo {} has been changed, updating".format(repo_path))
+        self._template_repos[repo_path]._load()
+
+    def handle_fs_events(self, dirname, filename, event):
+        if filename.endswith('.log'):
+            return
+        full_path = j.sal.fs.joinPaths(dirname, filename)
+        if j.sal.fs.getBaseName(full_path)[0] in '._':
+            return
+        is_file = j.sal.fs.isFile(full_path)
+        # optimization to only react to these files
+        if is_file and filename not in ['schema.capnp', 'config.yaml', 'actions.py']:
+            return
+        containing_repos = [i for i in self._template_repos if full_path.startswith(i)]
+        inside_added_repo = bool(containing_repos)
+        containing_repo = containing_repos[0] if inside_added_repo else None
+        if inside_added_repo:
+            if not is_it_a_template_repo(containing_repo):
+                self.delete(containing_repo)
+            else:
+                template_root = get_root_template_repo_if_relevant(dirname)
+                if template_root is None:
+                    # not relevant
+                    pass
+                elif template_root != containing_repo:
+                    # This is evil
+                    self.delete(containing_repo)
+                    self.create(template_root)
+                else:
+                    if is_file:
+                        self.update(template_root)
+                    elif event[0].mask & inotify.constants.IN_MOVED_TO:
+                        cmd = """find %s \( -name schema.capnp -o -name config.yaml -o -name actions.py \) -print -quit""" % (containing_repo)
+                        rc, _, _ = j.sal.process.execute(cmd, die=False, showout=False)
+                        if rc != 0:
+                            self.update(template_root)
+        else:
+            template_root = get_root_template_repo_if_relevant(dirname)
+            if template_root and template_root[0] in '._':
+                template_root = None
+            if template_root:
+                self.create(template_root)
+            else:
+                for i in self._template_repos:
+                    if i.startswith(full_path):
+                        self.delete(i)
+                self.__load(full_path)
 
     def list(self):
         # todo protect with lock
@@ -95,6 +130,8 @@ class TemplateRepoCollection:
         path can be any path in a git repo
         will look for the directory with .git and create a TemplateRepo object if it doesn't exist yet
         """
+        if path in self._template_repos:
+            return self._template_repos[path]
         original_path = path
 
         while not j.sal.fs.exists(j.sal.fs.joinPaths(path, ".git")) and path != "":
@@ -106,7 +143,7 @@ class TemplateRepoCollection:
                 raise j.exceptions.NotFound("path '{}' and its parents is not a git repository".format(original_path))
 
             self.logger.debug("New template repos found at {}".format(path))
-            self._template_repos[path] = TemplateRepo(path, is_global=is_global)
+            self._template_repos[path] = TemplateRepo(path, is_global=is_global, loop=self._loop)
 
         return self._template_repos[path]
 
@@ -134,7 +171,7 @@ class TemplateRepoCollection:
     #         # can access the opt dir, lets update the atyourservice
     #         # metadata
     #
-    #         global_templates_repos = j.core.atyourservice.config['metadata']
+    #         global_templates_repos = j.atyourservice.config['metadata']
     #
     #         for domain, info in global_templates_repos.items():
     #             url = info['url']
@@ -190,9 +227,9 @@ class TemplateRepo():
     Represent git repository containing Actor templates
     """
 
-    def __init__(self, path, is_global=True):
-        self.logger = j.logger.get('j.core.atyourservice')
-        self._loop = asyncio.get_event_loop()
+    def __init__(self, path, is_global=True, loop=None):
+        self.logger = j.logger.get('j.atyourservice')
+        self._loop = loop or asyncio.get_event_loop()
         self.path = j.sal.fs.pathNormalize(path)
         self.git = j.clients.git.get(self.path, check_path=False)
         self.is_global = is_global
@@ -204,28 +241,29 @@ class TemplateRepo():
         path is absolute path (if specified)
         load the actor template in memory
         """
-        self.logger.info("reload actor templates from {}".format(self.path))
+        actortemplates = set()
         for path in searchActorTemplates(self.path, is_global=self.is_global):
-            if not j.sal.fs.exists(path=path):
-                raise j.exceptions.NotFound("Cannot find path for ays templates:%s" % path)
+            if 'actions.py' in path:
+                actortemplates.add(path.split("actions.py")[0])
+            elif 'schema.capnp' in path:
+                actortemplates.add(path.split("schema.capnp")[0])
+            elif 'config.yaml' in path:
+                actortemplates.add(path.split("config.yaml")[0])
 
+        for path in actortemplates:
+
+            actortemplate_name = j.sal.fs.getBaseName(path)
+            if actortemplate_name.startswith("_") or actortemplate_name.startswith("."):
+                continue
             templ = ActorTemplate(path=path, template_repo=self)
-            if templ.name in self._templates:
-                if path != self._templates[templ.name].path:
-                    msg = 'Found duplicate template:found %s in \n- %s and \n- %s' % (
-                        templ.name, path, self._templates[templ.name].path)
-                    raise j.exceptions.Input(msg)
-
-            # self.logger.debug("load template {} from {}".format(templ, path))
             self._templates[templ.name] = templ
+        self.logger.info("reload actor templates from {}".format(self.path))
 
         # make sure all loaded repo still exists
         for template in list(self._templates.values()):
             if not j.sal.fs.exists(template.path):
                 self.logger.info("template {} doesnt exists anymore, unload".format(template))
                 del(self._templates[template.name])
-
-        self._loop.call_later(60, self._load)
 
     @property
     def templates(self):

@@ -185,3 +185,26 @@ class ays_templates_bynameView(HTTPMethodView):
         return await auth(request, ays_api.getAYSTemplate(request, name))
 
 ays_if.add_route(ays_templates_bynameView.as_view(), '/ays/templates/<name>')
+
+class ays_repository_byrepository_schedulerView(HTTPMethodView):
+
+    async def get(self, request, repository):
+
+        if not await oauth2_itsyouonline(["user:memberof:organization"]).check_token(request):
+            return text('', 401)
+
+        return await ays_api.getSchedulerStatus(request, repository)
+
+ays_if.add_route(ays_repository_byrepository_schedulerView.as_view(), '/ays/repository/<repository>/scheduler')
+
+
+class ays_repository_byrepository_scheduler_runs_runningView(HTTPMethodView):
+
+    async def get(self, request, repository):
+
+        if not await oauth2_itsyouonline(["user:memberof:organization"]).check_token(request):
+            return text('', 401)
+
+        return await ays_api.getCurrentRun(request, repository)
+
+ays_if.add_route(ays_repository_byrepository_scheduler_runs_runningView.as_view(), '/ays/repository/<repository>/scheduler/running')

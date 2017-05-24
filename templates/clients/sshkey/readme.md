@@ -43,7 +43,7 @@ sshkey__main:
 Here we make sure to use the `dns_rsa` key by setting its path.
 
 ```python3
-In [1]: repo = j.core.atyourservice.repoGet("/opt/repos/testssh")
+In [1]: repo = j.atyourservice.repoGet("/opt/repos/testssh")
 
 In [2]: repo.services
 Out[2]: [service:sshkey!main]
@@ -87,7 +87,7 @@ IPython 5.1.0 -- An enhanced Interactive Python.
 help      -> Python's own help system.
 object?   -> Details about 'object', use 'object??' for extra details.
 
-In [1]: repo = j.core.atyourservice.repoGet("/opt/repos/testssh")
+In [1]: repo = j.atyourservice.repoGet("/opt/repos/testssh")
 
 In [2]: ss=repo.services[0]
 

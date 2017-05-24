@@ -26,23 +26,54 @@ class RunScheduler:
     def __init__(self, repo):
         self.logger = j.logger.get("j.ays.RunScheduler")
         self.repo = repo
+        self._git = j.clients.git.get(repo.path, check_path=False)
         self.queue = asyncio.PriorityQueue(maxsize=0)
         self._retries = []
         self._retries_lock = asyncio.Lock()
         self._accept = False
-        self.is_running = False
+        self._is_running = False
+        self._current = None
+
+    @property
+    def status(self):
+        if self._accept and self._is_running:
+            return "running"
+        if not self._accept and self._is_running:
+            return "stopping"
+        return "halted"
+
+    @property
+    def current_run(self):
+        """
+        returns the run that is currently beeing executed.
+        """
+        if self._current is not None:
+            try:
+                run_model = j.core.jobcontroller.db.runs.get(self._current)
+                return run_model.objectGet()
+            except j.exceptions.Input:
+                return None
+        return None
+
+    def _commit(self, run):
+        """
+        create a commit on the ays repo
+        """
+        self.logger.debug("create commit on repo %s for un %s", self.repo.path, run.model.key)
+        msg = "Run {}\n\n{}".format(run.model.key, str(run))
+        self._git.commit(message=msg)
 
     async def start(self):
         """
         starts the run scheduler and begin whating the run queue.
         """
         self.logger.info("{} started".format(self))
-        if self.is_running:
+        if self._is_running:
             return
 
-        self.is_running = True
+        self._is_running = True
         self._accept = True
-        while self.is_running:
+        while self._is_running:
 
             try:
                 _, run = await asyncio.wait_for(self.queue.get(), timeout=10)
@@ -54,15 +85,17 @@ class RunScheduler:
                 continue
 
             try:
+                self._current = run.model.key
                 await run.execute()
+                self._commit(run)
             except:
-                # exception is handle in the job directly,
-                # catch here to not interrupt the loop
-                pass
+                # retry the run after a delay
+                await self._retry(run)
             finally:
+                self._current = None
                 self.queue.task_done()
 
-        self.is_running = False
+        self._is_running = False
         self.logger.info("{} stopped".format(self))
 
     async def stop(self, timeout=30):
@@ -107,55 +140,28 @@ class RunScheduler:
         self.logger.debug("add run {} to {}".format(run.model.key, self))
         await self.queue.put((priority, run))
 
-    async def retry(self, service, action_name):
-        """
-        Retry to executed a failed job from a run.
-        The job will be rescheduled with increasing delay till it succeed or its error level reach 7.
-        @param service: service object
-        @param action_name: name of the action to retry
-        """
-        async def do_retry(service, action_name):
+    async def _retry(self, run):
+        async def do_retry(run):
 
-            service_key = service.model.key
-            action = service.model.actions[action_name]
-
-            if action.state != 'error':
-                self.logger.info("no need to retry action {}, state not error".format(action))
-                return
-
-            if list(RETRY_DELAY.keys())[-1] < action.errorNr:
-                self.logger.info("action {} reached max retry, not rescheduling again.".format(action))
-                return
+            # find lowest error level
+            levels = set()
+            for step in run.steps:
+                for job in step.jobs:
+                    service_action_obj = job.service.model.actions[job.model.dbobj.actionName]
+                    if service_action_obj.errorNr > 0:
+                        levels.add(service_action_obj.errorNr)
 
             # if we are in dev mode, always reschedule after 10 sec
             if j.atyourservice.dev_mode:
                 delay = RETRY_DELAY[1]
             else:
-                delay = RETRY_DELAY[action.errorNr]
+                delay = RETRY_DELAY[min(levels)]
 
-            # make sure we don't reschedule with a delay smaller then the timeout of the job
-            if action.timeout > 0 and action.timeout > delay:
-                delay = action.timeout
-            self.logger.info("reschedule {} from {} in {}sec".format(action_name, service, delay))
-
+            self.logger.info("reschedule run %s in %ssec", run.model.key, delay)
             await asyncio.sleep(delay)
 
-            # make sure the service has not been deleted while we were waiting
-            try:
-                service = self.repo.serviceGet(key=service_key)
-            except j.exceptions.NotFound:
-                self.logger.info("don't retry service ({}) has been deleted".format(service_key))
-                return
-
-            # make sure the action is still in error state before rescheduling it
-            action = service.model.actions[action_name]
-            if action.state != 'error':
-                self.logger.info("don't retry action {} not in error state anymore".format(action_name))
-                return
-
             # sending this action to the run queue
-            run = self.repo.runCreate({service: [[action_name]]})
-            self.logger.debug("add error run {} to {}".format(run.model.key, self))
+            self.logger.debug("add run %s to %s", run.model.key, self)
             await self.repo.run_scheduler.add(run, ERROR_RUN_PRIORITY)
 
             # remove this task from the retries list
@@ -164,9 +170,13 @@ class RunScheduler:
                 if current_task in self._retries:
                     self._retries.remove(current_task)
 
+        # don't add if we are stopping the server
+        if not self._accept:
+            self.logger.warning("%s is stopping, can't add new run to it", self)
+            return
         # add the rery to the event loop
         with await self._retries_lock:
-            self._retries.append(asyncio.ensure_future(do_retry(service, action_name)))
+            self._retries.append(asyncio.ensure_future(do_retry(run)))
 
     def __repr__(self):
         return "RunScheduler<{}>".format(self.repo.name)

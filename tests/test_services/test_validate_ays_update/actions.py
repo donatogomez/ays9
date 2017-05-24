@@ -40,8 +40,8 @@ def test(job):
     actors = ['repo2_template1', 'repo2_template2']
     ays_update_cmd = 'ays update'
     try:
-        j.core.atyourservice.reposDiscover()
-        repo = j.core.atyourservice.repoGet(repo_path)
+        j.atyourservice.reposDiscover()
+        repo = j.atyourservice.repoGet(repo_path)
         repos.append(repo)
         repo.blueprintExecute(path=bp_path)
         for actor in actors:

@@ -16,7 +16,7 @@ class ServicesCollection(ModelBaseCollection):
         namespace = "ays:%s:service" % repository.name
         db = j.data.kvs.getMemoryStore(namespace, namespace)
         self.services = {}
-        self.logger = j.logger.get('j.core.atyourservice.service-collection')
+        self.logger = j.logger.get('j.atyourservice.service-collection')
 
         super().__init__(
             schema=ModelCapnp.Service,
@@ -99,3 +99,8 @@ class ServicesCollection(ModelBaseCollection):
         for key in self.list(name, actor, state, producer=producer, parent=parent):
             res.append(self.get(key))
         return res
+
+    def destroy(self):
+        super().destroy()
+        self.services = {}
+        self.logger = None

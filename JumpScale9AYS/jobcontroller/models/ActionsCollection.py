@@ -18,7 +18,7 @@ class ActionsCollection(ModelBaseCollection):
         self.namespace_prefix = 'jobs'
         category = "Action"
         namespace = "%s:%s" % (self.namespace_prefix, category.lower())
-        db = j.data.kvs.getRedisStore(namespace, namespace, **j.core.atyourservice.config['redis'])
+        db = j.data.kvs.getRedisStore(namespace, namespace, **j.atyourservice.config['redis'])
         super().__init__(ModelCapnp.Action, category=category, namespace=namespace, modelBaseClass=ActionModel, db=db, indexDb=db)
 
     def new(self):

@@ -12,15 +12,17 @@ from JumpScale9AYS.ays.lib.RunScheduler import RunScheduler
 
 import asyncio
 from collections import namedtuple
+import inotify
 
 import colored_traceback
 colored_traceback.add_hook(always=True)
 
 
 class AtYourServiceRepoCollection:
+    FSDIRS = [j.dirs.VARDIR, j.dirs.CODEDIR]
 
     def __init__(self):
-        self.logger = j.logger.get('j.core.atyourservice')
+        self.logger = j.logger.get('j.atyourservice')
         self._loop = asyncio.get_event_loop()
         self._repos = {}
         self._load()
@@ -28,32 +30,52 @@ class AtYourServiceRepoCollection:
     def _load(self):
         self.logger.info("reload AYS repos")
         # search repo on the filesystem
-        for dir_path in [j.dirs.VARDIR, j.dirs.CODEDIR]:
+        for dir_path in self.FSDIRS:
             self.logger.debug("search ays repo in {}".format(dir_path))
             for path in self._searchAysRepos(dir_path):
-                if path not in self._repos:
-                    self.logger.debug("AYS repo found {}".format(path))
-                    try:
-                        repo = AtYourServiceRepo(path)
-                        self._repos[repo.path] = repo
-                    except Exception as e:
-                        self.logger.exception("can't load repo at {}: {}".format(path, str(e)))
-                        if j.core.atyourservice.debug:
-                            raise
+                self.logger.debug("AYS repo found {}".format(path))
+                try:
+                    repo = AtYourServiceRepo(path, loop=self._loop)
+                    self._repos[repo.path] = repo
+                except Exception as e:
+                    self.logger.exception("can't load repo at {}: {}".format(path, str(e)))
+                    if j.atyourservice.debug:
+                        raise
 
-        # make sure all loaded repo still exists
-        for repo in list(self._repos.values()):
-            if not j.sal.fs.exists(repo.path):
-                self.logger.info("repo {} doesnt exists anymore, unload".format(repo.path))
-                del self._repos[repo.path]
+    def handle_fs_events(self, dirname, filename, event):
+        if filename.endswith('.log'):
+            return
 
-        self._loop.call_later(60, self._load)
+        full_path = j.sal.fs.joinPaths(dirname, filename)
+        current_path = full_path
+        while current_path:
+            if j.sal.fs.exists(j.sal.fs.joinPaths(current_path, '.ays')):
+                if event[0].mask & (inotify.constants.IN_MOVED_TO | inotify.constants.IN_CREATE):
+                    if current_path not in self._repos:
+                        self.logger.debug("AYS repo added {}".format(current_path))
+                        try:
+                            repo = AtYourServiceRepo(current_path, loop=self._loop)
+                            self._repos[repo.path] = repo
+                        except Exception as e:
+                            self.logger.exception("can't load repo at {}: {}".format(current_path, str(e)))
+                            if j.atyourservice.debug:
+                                raise
+                return
+            current_path = j.sal.fs.getParent(current_path)
+        if event[0].mask & (inotify.constants.IN_MOVED_FROM | inotify.constants.IN_DELETE):
+            if filename in ['.ays', '.git'] or full_path in self._repos:
+                repo_path = dirname if filename in ['.ays', '.git'] else full_path
+                self.logger.debug("AYS repo removed {}".format(full_path))
+                self._repos.pop(repo_path, None)
 
     def loadRepo(self, path):
+        ayspath = j.sal.fs.joinPaths(path, ".ays")
+        if j.sal.fs.exists(path) and not j.sal.fs.exists(ayspath):
+            j.sal.fs.touch(ayspath)
         if path not in self._repos:
             self.logger.debug("Loading AYS repo {}".format(path))
             try:
-                repo = AtYourServiceRepo(path)
+                repo = AtYourServiceRepo(path, loop=self._loop)
                 self._repos[repo.path] = repo
             except Exception as e:
                 self.logger.error('can not load repo at {}: {}'.format(path, str(e)))
@@ -67,22 +89,14 @@ class AtYourServiceRepoCollection:
 
         res = []
 
-        def callbackFunctionDir(path, arg):
-            if j.sal.fs.exists("%s/.ays" % path):
-                arg[1].append(path)
+        cmd = """find %s \( -wholename '*.ays' \) -exec readlink -f {} \;""" % (path)
+        rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
+        for reponame in out.splitlines():
+            reponame = reponame.split(".ays")[0]
+            if reponame.startswith(".") or reponame.startswith("_"):
+                continue
+            res.append(reponame)
 
-        def callbackForMatchDir(path, arg):
-            base = j.sal.fs.getBaseName(path)
-            if base in [".git", ".hg", ".github"]:
-                return False
-            depth = len(j.sal.fs.pathRemoveDirPart(path, arg[0]).split("/"))
-            # print("%s:%s" % (depth, j.sal.fs.pathRemoveDirPart(path, arg[0])))
-            if depth < 6:
-                return True
-            return False
-
-        j.sal.fswalker.walkFunctional(path, callbackFunctionFile=None, callbackFunctionDir=callbackFunctionDir, arg=[path, res],
-                                      callbackForMatchDir=callbackForMatchDir, callbackForMatchFile=lambda x, y: False)
         return res
 
     def list(self):
@@ -108,7 +122,7 @@ class AtYourServiceRepoCollection:
             'https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore', j.sal.fs.joinPaths(path, '.gitignore'))
 
         # TODO lock
-        self._repos[path] = AtYourServiceRepo(path=path)
+        self._repos[path] = AtYourServiceRepo(path=path, loop=self._loop)
         print("AYS Repo created at %s" % path)
         return self._repos[path]
 
@@ -139,21 +153,39 @@ DBTuple = namedtuple("DB", ['actors', 'services'])
 
 class AtYourServiceRepo():
 
-    def __init__(self, path):
-        self.logger = j.logger.get('j.core.atyourservice')
-        self.path = j.sal.fs.pathNormalize(path)
+    def __init__(self, path, loop=None):
+        self.logger = j.logger.get('j.atyourservice')
+        self.path = j.sal.fs.pathNormalize(path).rstrip("/")
         self.name = j.sal.fs.getBaseName(self.path)
         self.git = j.clients.git.get(self.path, check_path=False)
         self._db = None
         self.no_exec = False
-        self._loop = asyncio.get_event_loop()
 
-        self.run_scheduler = RunScheduler(self)
-        self._run_scheduler_task = self._loop.create_task(self.run_scheduler.start())
+        self._loop = loop or asyncio.get_event_loop()
 
-        j.core.atyourservice._loadActionBase()
+        self._run_scheduler = None
+        self.__run_scheduler_task = None
+
+        try:
+            self._run_scheduler_task
+        except:
+            self.logger.warning("The scheduler for the ays repo {} didn't start, [known issue](https://github.com/Jumpscale/jumpscale_core8/issues/921)".format(self.name))
+
+        j.atyourservice._loadActionBase()
 
         self._load_services()
+
+    @property
+    def run_scheduler(self):
+        if self._run_scheduler is None:
+            self._run_scheduler = RunScheduler(self)
+        return self._run_scheduler
+
+    @property
+    def _run_scheduler_task(self):
+        if self.__run_scheduler_task is None:
+            self.__run_scheduler_task = self._loop.create_task(self.run_scheduler.start())
+        return self.__run_scheduler_task
 
     @property
     def db(self):
@@ -182,7 +214,7 @@ class AtYourServiceRepo():
         stop run scheduler and wait for it to complete current runs and reties
         also stops all recurring actions in the services in the repo.
         """
-        if j.core.atyourservice.debug:
+        if j.atyourservice.debug:
             await self.run_scheduler.stop(timeout=3)
         else:
             await self.run_scheduler.stop(timeout=30)
@@ -207,18 +239,21 @@ class AtYourServiceRepo():
         j.sal.fs.removeDirTree(j.sal.fs.joinPaths(self.path, "actors"))
         j.sal.fs.removeDirTree(j.sal.fs.joinPaths(self.path, "services"))
         j.sal.fs.removeDirTree(j.sal.fs.joinPaths(self.path, "recipes"))  # for old time sake
-        j.core.atyourservice.aysRepos.delete(self)
+
+        j.atyourservice.aysRepos.delete(self)
+        ayspath = j.sal.fs.joinPaths(self.path, ".ays")
+        j.sal.fs.remove(ayspath)
+        self.logger = None
 
     async def destroy(self):
         await self.delete()
-        j.core.atyourservice.aysRepos.loadRepo(self.path)
+        j.atyourservice.aysRepos.loadRepo(self.path)
 
     def enable_noexec(self):
         """
         Enable the no_exec mode.
         Once this mode is enabled, no action will ever be execute.
         But the state of the action will be updated as if everything went fine (state ok)
-
         This mode can be used for demo or testing
         """
         # self.model.enable_no_exec()
@@ -259,7 +294,7 @@ class AtYourServiceRepo():
                                             name, level=1, source="", tags="", msgpub="")
 
             obj = self.actorCreate(name)
-
+            obj.saveAll()
         return obj
 
     def actorGetByKey(self, key):
@@ -282,11 +317,11 @@ class AtYourServiceRepo():
     def templates(self):
         templates = {}
         # need to link to templates of factory and then overrule with the local ones
-        for template in j.core.atyourservice.actorTemplates:
+        for template in j.atyourservice.actorTemplates:
             templates[template.name] = template
 
         # load local templates
-        templateRepo = j.core.atyourservice.templateRepos.create(self.path, is_global=False)
+        templateRepo = j.atyourservice.templateRepos.create(self.path, is_global=False)
         for template in templateRepo.templates:
             # here we want to overrides the global templates with local one. so having
             # duplicate name is normal
@@ -311,7 +346,7 @@ class AtYourServiceRepo():
 
     def actorTemplatesFind(self, name="", domain="", role=''):
         res = []
-        for template in self.templates:
+        for template in self.templates.values():
             if not(name == "" or template.name == name):
                 # no match continue
                 continue

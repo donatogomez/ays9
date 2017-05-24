@@ -1,6 +1,6 @@
 from js9 import j
 
-ActionsBase = j.core.atyourservice.getActionsBaseClass()
+ActionsBase = j.atyourservice.getActionsBaseClass()
 
 
 class Actions(ActionsBase):

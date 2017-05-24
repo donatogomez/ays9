@@ -45,7 +45,7 @@ Generate a token via @botfather on Telegram, then use it to launch this bot:
 With a python script:
 ```python
 from js9 import j
-bot = j.core.atyourservice.telegramBot('1857YYYY:XXXXXXXXXXXX')
+bot = j.atyourservice.telegramBot('1857YYYY:XXXXXXXXXXXX')
 bot.run()
 ```
 Using ays CLI:

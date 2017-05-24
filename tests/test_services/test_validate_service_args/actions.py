@@ -36,8 +36,8 @@ def test(job):
     repo = None
 
     try:
-        j.core.atyourservice.reposDiscover()
-        repo = j.core.atyourservice.repoGet(j.sal.fs.joinPaths(j.dirs.codeDir, 'github/jumpscale/jumpscale_core8/tests/sample_repo4'))
+        j.atyourservice.reposDiscover()
+        repo = j.atyourservice.repoGet(j.sal.fs.joinPaths(j.dirs.codeDir, 'github/jumpscale/jumpscale_core8/tests/sample_repo4'))
         for bp_name, should_success in blueprints.items():
             bp = repo.blueprintGet(bp_name)
             try:

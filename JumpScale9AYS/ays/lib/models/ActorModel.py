@@ -2,6 +2,9 @@ from js9 import j
 from JumpScale9AYS.ays.lib.models.ActorServiceBaseModel import ActorServiceBaseModel
 from JumpScale9AYS.ays.lib.Actor import Actor
 
+from collections import OrderedDict
+import msgpack
+
 
 class ActorModel(ActorServiceBaseModel):
     """
@@ -10,7 +13,7 @@ class ActorModel(ActorServiceBaseModel):
 
     def __init__(self, aysrepo, collection, key="", new=False):
         super().__init__(aysrepo=aysrepo, key=key, new=new, collection=collection)
-        self.logger = j.logger.get('j.core.atyourservice.actor-model')
+        self.logger = j.logger.get('j.atyourservice.actor-model')
 
     def index(self):
         # put indexes in db as specified
@@ -73,8 +76,9 @@ class ActorModel(ActorServiceBaseModel):
         """
 
         o = self.collection.capnp_schema.ActorPointer.new_message(actorRole=role, minServices=int(min), maxServices=int(max),
-                                                                  auto=bool(auto), optional=bool(optional), argname=argname)
+                                                        auto=bool(auto), optional=bool(optional), argname=argname)
         self.addSubItem('producers', o)
+
 
     @property
     def dictFiltered(self):

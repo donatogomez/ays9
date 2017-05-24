@@ -1,6 +1,9 @@
 from js9 import j
 
 from functools import wraps
+from asyncio import get_event_loop
+from sanic.response import text, json
+
 from jose import jwt, exceptions
 
 oauth2_server_pub_key = """"""
@@ -41,7 +44,7 @@ class oauth2_itsyouonline:
         ))
 
         if authorization is None:
-            j.core.atyourservice.logger.error('No JWT token')
+            j.atyourservice.logger.error('No JWT token')
             return 401, 'No JWT token'
 
         msg = ""
@@ -81,5 +84,5 @@ class oauth2_itsyouonline:
             else:
                 msg = 'Your JWT is invalid'
 
-        j.core.atyourservice.logger.error(msg)
+        j.atyourservice.logger.error(msg)
         return 401, msg

@@ -1,5 +1,9 @@
+import json as JSON
+
 import asyncio
-from sanic.response import json
+from sanic.response import json, text
+import jsonschema
+from jsonschema import Draft4Validator
 from js9 import j
 
 import os
@@ -16,7 +20,7 @@ async def webhooks_github_post(request):
 
     event = request.headers.get('X-GitHub-Event')
     payload = request.json
-    for repo in j.core.atyourservice.aysRepos.list():
+    for repo in j.atyourservice.aysRepos.list():
         for service in repo.services:
             await service.processEvent(
                 channel='webservice',
@@ -42,7 +46,7 @@ async def webhooks_events_post(request):
     payload['request'] = request
 
     coros = []
-    for repo in j.core.atyourservice.aysRepos.list():
+    for repo in j.atyourservice.aysRepos.list():
         for service in repo.services:
             coros.append(service.processEvent(
                 channel='webservice',

@@ -1,5 +1,6 @@
 from sanic import Blueprint
 from sanic.views import HTTPMethodView
+from sanic.response import text
 from JumpScale9AYS.ays.server import webhooks_api
 
 

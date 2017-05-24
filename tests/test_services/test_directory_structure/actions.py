@@ -55,8 +55,8 @@ def test(job):
                         if not j.sal.fs.exists(j.sal.fs.joinPaths(base_path, service_file)):
                             failures.append(service_file_missing_msg % j.sal.fs.joinPaths(base_path, service_file))
     try:
-        j.core.atyourservice.reposDiscover()
-        repo = j.core.atyourservice.repoGet(j.sal.fs.joinPaths(j.dirs.codeDir, 'github/jumpscale/jumpscale_core8/tests/sample_repo1'))
+        j.atyourservice.reposDiscover()
+        repo = j.atyourservice.repoGet(j.sal.fs.joinPaths(j.dirs.codeDir, 'github/jumpscale/jumpscale_core8/tests/sample_repo1'))
         repo.blueprintExecute(role="", instance="", path="")
         # validate directory structure
         for actor in expected_actors:

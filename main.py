@@ -43,11 +43,11 @@ def main(host, port, log, dev):
     @sanic_app.listener('before_server_start')
     async def init_ays(sanic, loop):
         loop.set_debug(debug)
-        j.core.atyourservice.debug = debug
-        j.core.atyourservice.dev_mode = dev
-        if j.core.atyourservice.dev_mode:
-            j.core.atyourservice.logger.info("development mode enabled")
-        j.core.atyourservice._start(loop=loop)
+        j.atyourservice.debug = debug
+        j.atyourservice.dev_mode = dev
+        if j.atyourservice.dev_mode:
+            j.atyourservice.logger.info("development mode enabled")
+        j.atyourservice._start(loop=loop)
 
     @sanic_app.listener('after_start')
     async def after_start(sanic, loop):
@@ -55,7 +55,7 @@ def main(host, port, log, dev):
 
     @sanic_app.listener('after_stop')
     async def stop_ays(sanic, loop):
-        await j.core.atyourservice._stop()
+        await j.atyourservice._stop()
 
     # start server
     sanic_app.run(debug=debug, host=host, port=port, workers=1)

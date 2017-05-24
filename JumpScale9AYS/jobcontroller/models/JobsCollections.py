@@ -16,7 +16,7 @@ class JobsCollection(ModelBaseCollection):
         self.namespace_prefix = 'jobs'
         category = 'Job'
         namespace = "%s:%s" % (self.namespace_prefix, category.lower())
-        db = j.data.kvs.getRedisStore(namespace, namespace, **j.core.atyourservice.config['redis'])
+        db = j.data.kvs.getRedisStore(namespace, namespace, **j.atyourservice.config['redis'])
         super().__init__(ModelCapnp.Job, category=category, namespace=namespace, modelBaseClass=JobModel, db=db, indexDb=db)
 
     def new(self):

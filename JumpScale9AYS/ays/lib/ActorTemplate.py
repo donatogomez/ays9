@@ -5,7 +5,7 @@ from collections import OrderedDict
 class ActorTemplate():
 
     def __init__(self, path, template_repo=None):
-        self.logger = j.logger.get('j.core.atyourservice')
+        self.logger = j.logger.get('j.atyourservice')
 
         if template_repo is not None:
             if j.sal.fs.exists(path=path):

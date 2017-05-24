@@ -22,7 +22,7 @@ AYS_REPO_DIR = '/optvar/cockpit_repos'
 
 async def reload(request):
     try:
-        j.core.atyourservice.reset()
+        j.atyourservice.reset()
         return json({})
     except Exception as e:
         return json({'error': e.message}, 500)
@@ -47,11 +47,11 @@ async def listRepositories(request):
     list all repositorys
     It is handler for GET /ays/repository
     '''
-    if j.core.atyourservice.aysRepos is None:
-        j.core.atyourservice.start()
-    if not j.core.atyourservice.aysRepos:
+    if j.atyourservice.aysRepos is None:
+        j.atyourservice.start()
+    if not j.atyourservice.aysRepos:
         return json([])
-    repos = [repository_view(repo) for repo in j.core.atyourservice.aysRepos.list()]
+    repos = [repository_view(repo) for repo in j.atyourservice.aysRepos.list()]
     return json(repos)
 
 async def createRepository(request):
@@ -73,7 +73,7 @@ async def createRepository(request):
 
     try:
         path = j.sal.fs.joinPaths(AYS_REPO_DIR, inputs['name'])
-        repo = j.core.atyourservice.aysRepos.create(path, git_url=inputs['git_url'])
+        repo = j.atyourservice.aysRepos.create(path, git_url=inputs['git_url'])
         return json(repository_view(repo), 201)
     except Exception as err:
         # clean directory if something went wrong during creation
@@ -127,6 +127,38 @@ async def destroyRepository(request, repository):
     return json({}, 204)
 
 
+async def getSchedulerStatus(request, repository):
+    '''
+    Return status of the scheduler
+    It is handler for GET /ays/repository/<repository>/scheduler
+    '''
+    try:
+        repo = get_repo(repository)
+    except j.exceptions.NotFound as e:
+        return json({'error': e.message}, 404)
+
+    return json({
+        "status": repo.run_scheduler.status,
+        "queueSize": repo.run_scheduler.queue.qsize()
+    }, 200)
+
+
+async def getCurrentRun(request, repository):
+    '''
+    Inspect if a run is currently beeing executed
+    It is handler for GET /ays/repository/<repository>/scheduler/runs/running
+    '''
+    try:
+        repo = get_repo(repository)
+    except j.exceptions.NotFound as e:
+        return json({'error': e.message}, 404)
+
+    if repo.run_scheduler.current_run:
+        return json(run_view(repo.run_scheduler.current_run), 200)
+
+    return json({}, 204)
+
+
 async def listTemplates(request, repository):
     '''
     list all templates
@@ -165,10 +197,10 @@ async def listAYSTemplates(request):
     list all templates in ays_jumpscale
     It is hadnler for GET /ays/templates
     '''
-    if j.core.atyourservice.aysRepos is None:
-        j.core.atyourservice.start()
+    if j.atyourservice.aysRepos is None:
+        j.atyourservice.start()
     try:
-        templates = [template_view(templ) for templ in j.core.atyourservice.actorTemplates]
+        templates = [template_view(templ) for templ in j.atyourservice.actorTemplates]
     except j.exceptions.NotFound as e:
         return json({'error': 'No templates found'}, 404)
     return json(templates, 200)
@@ -179,10 +211,10 @@ async def getAYSTemplate(request, template):
     list all templates in ays_jumpscale
     It is hadnler for GET /ays/templates
     '''
-    if j.core.atyourservice.aysRepos is None:
-        j.core.atyourservice.start()
+    if j.atyourservice.aysRepos is None:
+        j.atyourservice.start()
     try:
-        for tmpl in j.core.atyourservice.actorTemplates:
+        for tmpl in j.atyourservice.actorTemplates:
             if tmpl.name == template:
                 template = template_view(tmpl)
                 break
@@ -262,6 +294,7 @@ async def deleteRun(request, aysrun, repository):
 
     try:
         repo.runDelete(aysrun)
+        return json('run deleted succesfully', 200)
     except j.exceptions.NotFound as e:
         return json({'error': e.message}, 404)
 
@@ -393,7 +426,7 @@ async def executeBlueprint(request, blueprint, repository):
         await repo.blueprintExecute(path=bp.path)
     except Exception as e:
         error_msg = "Error during execution of the blueprint:\n %s" % str(e)
-        j.core.atyourservice.logger.exception(error_msg)
+        j.atyourservice.logger.exception(error_msg)
         return json({'error': error_msg}, 500)
 
     return json({'msg':'Blueprint {} executed'.format(blueprint)})
@@ -652,9 +685,9 @@ def get_repo(name):
     name is prepend with AYS_REPO_DIR to create the full path to the repo
     raise j.exceptions.NotFound if repo doesn't exists
     """
-    if j.core.atyourservice.aysRepos is None:
-        j.core.atyourservice.start()
-    for repo in j.core.atyourservice.aysRepos.list():
+    if j.atyourservice.aysRepos is None:
+        j.atyourservice.start()
+    for repo in j.atyourservice.aysRepos.list():
         if name == repo.name:
             return repo
 

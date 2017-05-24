@@ -10,7 +10,7 @@ class RunStep:
         self.run = run
         self.dbobj = dbobj
         self.dbobj.number = nr
-        self.logger = j.core.atyourservice.logger
+        self.logger = j.atyourservice.logger
 
     @property
     def state(self):
