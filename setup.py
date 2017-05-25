@@ -58,6 +58,7 @@ setup(
         'jsonschema>=2.6.0',
         'python-jose>=1.3.2',
         'sanic>=0.5.2',
+        'git+https://github.com/gigforks/PyInotify',
     ],
     cmdclass={
         'install': install,
