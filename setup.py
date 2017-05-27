@@ -14,6 +14,8 @@ def _post_install(libname, libpath):
 
     print("****:%s:%s" % (libname, libpath))
 
+    j.do.execute("pip3 install git+https://github.com/gigforks/PyInotify")
+
     j.tools.jsloader.generatePlugins()
     j.tools.jsloader.copyPyLibs()
 
@@ -51,8 +53,7 @@ setup(
         'g8core>=1.0.0',  # is not ok, because strictly spoken this is not part of ays9
         'jsonschema>=2.6.0',
         'python-jose>=1.3.2',
-        'sanic>=0.5.2',
-        'git+https://github.com/gigforks/PyInotify',
+        'sanic>=0.5.2'
     ],
     cmdclass={
         'install': install,
