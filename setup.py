@@ -5,18 +5,12 @@ import os
 
 
 def _post_install(libname, libpath):
-    from JumpScale9 import j
-    import os
-
-    # ensure plugins section in config
-    if 'plugins' not in j.application.config:
-        j.application.config['plugins'] = {}
+    from js9 import j
 
     # add this plugin to the config
     c = j.core.state.configGet('plugins', defval={})
     c[libname] = libpath
     j.core.state.configSet('plugins', c)
-
 
     print("****:%s:%s" % (libname, libpath))
 
