@@ -28,7 +28,7 @@
 
 - methods to start an actor
 
-  - j.atyourservice.actor
+  - j.atyourservice.server.actor
 
     - get()
 

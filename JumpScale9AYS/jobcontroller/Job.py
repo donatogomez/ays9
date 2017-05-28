@@ -186,7 +186,7 @@ class Job:
     def service(self):
         if self._service is None:
             if self.model.dbobj.actorName != "":
-                repo = j.atyourservice.aysRepos.get(path=self.model.dbobj.repoKey)
+                repo = j.atyourservice.server.aysRepos.get(path=self.model.dbobj.repoKey)
                 try:
                     self._service = repo.serviceGetByKey(self.model.dbobj.serviceKey)
                 except j.exceptions.NotFound:

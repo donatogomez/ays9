@@ -44,7 +44,7 @@ class TemplateRepoCollection:
     FSDIRS = [j.dirs.CODEDIR]
 
     def __init__(self):
-        self.logger = j.logger.get('j.atyourservice')
+        self.logger = j.logger.get('j.atyourservice.server')
         self._loop = asyncio.get_event_loop()  # TODO: question why do we need this
         self._template_repos = {}
         self._load()
@@ -171,7 +171,7 @@ class TemplateRepoCollection:
     #         # can access the opt dir, lets update the atyourservice
     #         # metadata
     #
-    #         global_templates_repos = j.atyourservice.config['metadata']
+    #         global_templates_repos = j.atyourservice.server.config['metadata']
     #
     #         for domain, info in global_templates_repos.items():
     #             url = info['url']
@@ -228,7 +228,7 @@ class TemplateRepo():
     """
 
     def __init__(self, path, is_global=True, loop=None):
-        self.logger = j.logger.get('j.atyourservice')
+        self.logger = j.logger.get('j.atyourservice.server')
         self._loop = loop or asyncio.get_event_loop()
         self.path = j.sal.fs.pathNormalize(path)
         self.git = j.clients.git.get(self.path, check_path=False)

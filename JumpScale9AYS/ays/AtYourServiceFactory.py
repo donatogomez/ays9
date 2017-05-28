@@ -63,13 +63,13 @@ class AYSNotify(inotify.adapters.InotifyTrees):
 class AtYourServiceFactory:
 
     def __init__(self):
-        self.__jslocation__ = "j.atyourservice"
+        self.__jslocation__ = "j.atyourservice.server"
         self.__imports__ = "pycapnp"
         self.loop = None
         self._config = None
         self._domains = []
         self.debug = j.application.config['system']['debug']
-        self.logger = j.logger.get('j.atyourservice')
+        self.logger = j.logger.get('j.atyourservice.server')
         self.started = False
 
         self.baseActions = {}

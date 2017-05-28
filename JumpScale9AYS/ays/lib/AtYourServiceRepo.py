@@ -22,7 +22,7 @@ class AtYourServiceRepoCollection:
     FSDIRS = [j.dirs.VARDIR, j.dirs.CODEDIR]
 
     def __init__(self):
-        self.logger = j.logger.get('j.atyourservice')
+        self.logger = j.logger.get('j.atyourservice.server')
         self._loop = asyncio.get_event_loop()
         self._repos = {}
         self._load()
@@ -39,7 +39,7 @@ class AtYourServiceRepoCollection:
                     self._repos[repo.path] = repo
                 except Exception as e:
                     self.logger.exception("can't load repo at {}: {}".format(path, str(e)))
-                    if j.atyourservice.debug:
+                    if j.atyourservice.server.debug:
                         raise
 
     def handle_fs_events(self, dirname, filename, event):
@@ -58,7 +58,7 @@ class AtYourServiceRepoCollection:
                             self._repos[repo.path] = repo
                         except Exception as e:
                             self.logger.exception("can't load repo at {}: {}".format(current_path, str(e)))
-                            if j.atyourservice.debug:
+                            if j.atyourservice.server.debug:
                                 raise
                 return
             current_path = j.sal.fs.getParent(current_path)
@@ -154,7 +154,7 @@ DBTuple = namedtuple("DB", ['actors', 'services'])
 class AtYourServiceRepo():
 
     def __init__(self, path, loop=None):
-        self.logger = j.logger.get('j.atyourservice')
+        self.logger = j.logger.get('j.atyourservice.server')
         self.path = j.sal.fs.pathNormalize(path).rstrip("/")
         self.name = j.sal.fs.getBaseName(self.path)
         self.git = j.clients.git.get(self.path, check_path=False)
@@ -171,7 +171,7 @@ class AtYourServiceRepo():
         except:
             self.logger.warning("The scheduler for the ays repo {} didn't start, [known issue](https://github.com/Jumpscale/jumpscale_core8/issues/921)".format(self.name))
 
-        j.atyourservice._loadActionBase()
+        j.atyourservice.server._loadActionBase()
 
         self._load_services()
 
@@ -214,7 +214,7 @@ class AtYourServiceRepo():
         stop run scheduler and wait for it to complete current runs and reties
         also stops all recurring actions in the services in the repo.
         """
-        if j.atyourservice.debug:
+        if j.atyourservice.server.debug:
             await self.run_scheduler.stop(timeout=3)
         else:
             await self.run_scheduler.stop(timeout=30)
@@ -240,14 +240,14 @@ class AtYourServiceRepo():
         j.sal.fs.removeDirTree(j.sal.fs.joinPaths(self.path, "services"))
         j.sal.fs.removeDirTree(j.sal.fs.joinPaths(self.path, "recipes"))  # for old time sake
 
-        j.atyourservice.aysRepos.delete(self)
+        j.atyourservice.server.aysRepos.delete(self)
         ayspath = j.sal.fs.joinPaths(self.path, ".ays")
         j.sal.fs.remove(ayspath)
         self.logger = None
 
     async def destroy(self):
         await self.delete()
-        j.atyourservice.aysRepos.loadRepo(self.path)
+        j.atyourservice.server.aysRepos.loadRepo(self.path)
 
     def enable_noexec(self):
         """
@@ -317,11 +317,11 @@ class AtYourServiceRepo():
     def templates(self):
         templates = {}
         # need to link to templates of factory and then overrule with the local ones
-        for template in j.atyourservice.actorTemplates:
+        for template in j.atyourservice.server.actorTemplates:
             templates[template.name] = template
 
         # load local templates
-        templateRepo = j.atyourservice.templateRepos.create(self.path, is_global=False)
+        templateRepo = j.atyourservice.server.templateRepos.create(self.path, is_global=False)
         for template in templateRepo.templates:
             # here we want to overrides the global templates with local one. so having
             # duplicate name is normal

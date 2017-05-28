@@ -1,5 +1,6 @@
 from js9 import j
 from .Service import Service
+import capnp
 from JumpScale9AYS.ays.lib import model_capnp as ModelCapnp
 import capnp
 import msgpack
@@ -13,7 +14,7 @@ class Actor():
         """
 
         self.aysrepo = aysrepo
-        self.logger = j.atyourservice.logger
+        self.logger = j.atyourservice.server.logger
         self._schema = None
         self.model = None
 
@@ -361,8 +362,8 @@ class Actor():
                 # not found
 
                 # check if we find the action in our default actions, if yes use that one
-                if actionname in j.atyourservice.baseActions:
-                    actionobj, actionmethod = j.atyourservice.baseActions[actionname]
+                if actionname in j.atyourservice.server.baseActions:
+                    actionobj, actionmethod = j.atyourservice.server.baseActions[actionname]
                     self.model.actionAdd(name=actionname, key=actionobj.key)
                 else:
                     if actionname == "input":

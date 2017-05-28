@@ -152,7 +152,7 @@ class RunScheduler:
                         levels.add(service_action_obj.errorNr)
 
             # if we are in dev mode, always reschedule after 10 sec
-            if j.atyourservice.dev_mode:
+            if j.atyourservice.server.dev_mode:
                 delay = RETRY_DELAY[1]
             else:
                 delay = RETRY_DELAY[min(levels)]

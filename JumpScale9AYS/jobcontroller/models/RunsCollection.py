@@ -17,7 +17,7 @@ class RunsCollection(ModelBaseCollection):
         category = "Run"
         self.namespace_prefix = 'runs'
         namespace = "%s:%s" % (self.namespace_prefix, category.lower())
-        db = j.data.kvs.getRedisStore(namespace, namespace, **j.atyourservice.config['redis'])
+        db = j.data.kvs.getRedisStore(namespace, namespace, **j.atyourservice.server.config['redis'])
         super().__init__(ModelCapnp.Run, category=category, namespace=namespace, modelBaseClass=RunModel, db=db, indexDb=db)
 
     def new(self):

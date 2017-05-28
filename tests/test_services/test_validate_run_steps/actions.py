@@ -35,8 +35,8 @@ def test(job):
                                 'datacenter.ovh_germany3.install', 'sshkey.main.install'),
                                 ('cockpit.cockpitv1.install', 'cockpit.cockpitv2.install')
                                 ]
-        j.atyourservice.reposDiscover()
-        repo1 = j.atyourservice.repoGet(repo1_path)
+        j.atyourservice.server.reposDiscover()
+        repo1 = j.atyourservice.server.repoGet(repo1_path)
         repos.append(repo1)
         for bp in repo1.blueprints:
             repo1.blueprintExecute(path=bp.path)
@@ -57,7 +57,7 @@ def test(job):
         }
         expected_step_statuses = ['ok', 'error', 'new']
         expected_run_status = 'error'
-        repo2 = j.atyourservice.repoGet(repo2_path)
+        repo2 = j.atyourservice.server.repoGet(repo2_path)
         repos.append(repo2)
         for bp in repo2.blueprints:
             repo2.blueprintExecute(path=bp.path)

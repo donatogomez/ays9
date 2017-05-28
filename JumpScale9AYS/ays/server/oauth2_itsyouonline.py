@@ -44,7 +44,7 @@ class oauth2_itsyouonline:
         ))
 
         if authorization is None:
-            j.atyourservice.logger.error('No JWT token')
+            j.atyourservice.server.logger.error('No JWT token')
             return 401, 'No JWT token'
 
         msg = ""
@@ -84,5 +84,5 @@ class oauth2_itsyouonline:
             else:
                 msg = 'Your JWT is invalid'
 
-        j.atyourservice.logger.error(msg)
+        j.atyourservice.server.logger.error(msg)
         return 401, msg

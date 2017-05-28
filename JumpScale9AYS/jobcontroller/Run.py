@@ -9,7 +9,7 @@ class Run:
 
     def __init__(self, model):
         self.lastnr = 0
-        self.logger = j.atyourservice.logger
+        self.logger = j.atyourservice.server.logger
         self.model = model
 
     @property

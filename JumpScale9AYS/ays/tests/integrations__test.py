@@ -47,10 +47,10 @@ class AYSTestBase(unittest.TestCase):
             j.sal.fs.changeDir("/opt")
 
         # reset ays status
-        j.atyourservice.services = []
-        j.atyourservice.templates = []
-        j.atyourservice._init = False
-        j.atyourservice._domains = []
+        j.atyourservice.server.services = []
+        j.atyourservice.server.templates = []
+        j.atyourservice.server._init = False
+        j.atyourservice.server._domains = []
 
 
 class AYSInit(AYSTestBase):

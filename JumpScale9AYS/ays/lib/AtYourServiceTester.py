@@ -23,9 +23,9 @@ class AtYourServiceTester:
 
         self._git = None
 
-        self.aysrepo = j.atyourservice.get(subname, self.path)
+        self.aysrepo = j.atyourservice.server.get(subname, self.path)
 
-        self.logger = j.logger.get('j.atyourservicetester')
+        self.logger = j.logger.get('j.atyourservice.servertester')
 
         if self.subname != "fake_IT_env":
             raise j.exceptions.Input("test only supported on fake_IT_env")

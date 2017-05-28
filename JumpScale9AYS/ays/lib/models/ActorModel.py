@@ -13,7 +13,7 @@ class ActorModel(ActorServiceBaseModel):
 
     def __init__(self, aysrepo, collection, key="", new=False):
         super().__init__(aysrepo=aysrepo, key=key, new=new, collection=collection)
-        self.logger = j.logger.get('j.atyourservice.actor-model')
+        self.logger = j.logger.get('j.atyourservice.server.actor-model')
 
     def index(self):
         # put indexes in db as specified

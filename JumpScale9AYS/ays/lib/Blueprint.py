@@ -7,7 +7,7 @@ class Blueprint:
     """
 
     def __init__(self, aysrepo, path="", content=""):
-        self.logger = j.logger.get('j.atyourservice.blueprint')
+        self.logger = j.logger.get('j.atyourservice.server.blueprint')
         self.aysrepo = aysrepo
         self.path = path
         self.active = True

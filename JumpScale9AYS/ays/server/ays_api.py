@@ -22,7 +22,7 @@ AYS_REPO_DIR = '/optvar/cockpit_repos'
 
 async def reload(request):
     try:
-        j.atyourservice.reset()
+        j.atyourservice.server.reset()
         return json({})
     except Exception as e:
         return json({'error': e.message}, 500)
@@ -47,11 +47,11 @@ async def listRepositories(request):
     list all repositorys
     It is handler for GET /ays/repository
     '''
-    if j.atyourservice.aysRepos is None:
-        j.atyourservice.start()
-    if not j.atyourservice.aysRepos:
+    if j.atyourservice.server.aysRepos is None:
+        j.atyourservice.server.start()
+    if not j.atyourservice.server.aysRepos:
         return json([])
-    repos = [repository_view(repo) for repo in j.atyourservice.aysRepos.list()]
+    repos = [repository_view(repo) for repo in j.atyourservice.server.aysRepos.list()]
     return json(repos)
 
 async def createRepository(request):
@@ -73,7 +73,7 @@ async def createRepository(request):
 
     try:
         path = j.sal.fs.joinPaths(AYS_REPO_DIR, inputs['name'])
-        repo = j.atyourservice.aysRepos.create(path, git_url=inputs['git_url'])
+        repo = j.atyourservice.server.aysRepos.create(path, git_url=inputs['git_url'])
         return json(repository_view(repo), 201)
     except Exception as err:
         # clean directory if something went wrong during creation
@@ -197,10 +197,10 @@ async def listAYSTemplates(request):
     list all templates in ays_jumpscale
     It is hadnler for GET /ays/templates
     '''
-    if j.atyourservice.aysRepos is None:
-        j.atyourservice.start()
+    if j.atyourservice.server.aysRepos is None:
+        j.atyourservice.server.start()
     try:
-        templates = [template_view(templ) for templ in j.atyourservice.actorTemplates]
+        templates = [template_view(templ) for templ in j.atyourservice.server.actorTemplates]
     except j.exceptions.NotFound as e:
         return json({'error': 'No templates found'}, 404)
     return json(templates, 200)
@@ -211,10 +211,10 @@ async def getAYSTemplate(request, template):
     list all templates in ays_jumpscale
     It is hadnler for GET /ays/templates
     '''
-    if j.atyourservice.aysRepos is None:
-        j.atyourservice.start()
+    if j.atyourservice.server.aysRepos is None:
+        j.atyourservice.server.start()
     try:
-        for tmpl in j.atyourservice.actorTemplates:
+        for tmpl in j.atyourservice.server.actorTemplates:
             if tmpl.name == template:
                 template = template_view(tmpl)
                 break
@@ -426,7 +426,7 @@ async def executeBlueprint(request, blueprint, repository):
         await repo.blueprintExecute(path=bp.path)
     except Exception as e:
         error_msg = "Error during execution of the blueprint:\n %s" % str(e)
-        j.atyourservice.logger.exception(error_msg)
+        j.atyourservice.server.logger.exception(error_msg)
         return json({'error': error_msg}, 500)
 
     return json({'msg':'Blueprint {} executed'.format(blueprint)})
@@ -685,9 +685,9 @@ def get_repo(name):
     name is prepend with AYS_REPO_DIR to create the full path to the repo
     raise j.exceptions.NotFound if repo doesn't exists
     """
-    if j.atyourservice.aysRepos is None:
-        j.atyourservice.start()
-    for repo in j.atyourservice.aysRepos.list():
+    if j.atyourservice.server.aysRepos is None:
+        j.atyourservice.server.start()
+    for repo in j.atyourservice.server.aysRepos.list():
         if name == repo.name:
             return repo
 

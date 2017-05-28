@@ -5,7 +5,7 @@ import asyncio
 class RecurringTask:
     """Execute a job periodicly"""
     def __init__(self, service, action, period, loop=None):
-        self.logger = j.logger.get('j.atyourservice')
+        self.logger = j.logger.get('j.atyourservice.server')
         self._loop = loop or asyncio.get_event_loop()
         self._future = None
         self._job = None
@@ -61,8 +61,8 @@ if __name__ == '__main__':
 
     loop = asyncio.get_event_loop()
 
-    j.atyourservice.aysRepos._load()
-    repo = j.atyourservice.aysRepos.get('/opt/code/cockpit_repos/testrepo')
+    j.atyourservice.server.aysRepos._load()
+    repo = j.atyourservice.server.aysRepos.get('/opt/code/cockpit_repos/testrepo')
     s = repo.serviceGet('node','demo')
     t = RecurringTask(s,'monitor', 10, loop=loop)
     t.start()

@@ -11,7 +11,7 @@ class ServiceModel(ActorServiceBaseModel):
     def __init__(self, aysrepo, collection, key="", new=False):
         super().__init__(aysrepo=aysrepo, key=key, new=new, collection=collection)
         self._aysrepo = aysrepo
-        self.logger = j.logger.get('j.atyourservice.service-model')
+        self.logger = j.logger.get('j.atyourservice.server.service-model')
 
     @property
     def role(self):

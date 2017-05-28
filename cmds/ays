@@ -587,7 +587,7 @@ def start(bind, port, log):
     """
     start an ays service in tmux
     """
-    j.atyourservice.start(bind=bind, port=port, log=log)
+    j.atyourservice.server.start(bind=bind, port=port, log=log)
 # AYS service related group of commands
 
 
