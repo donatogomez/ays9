@@ -21,9 +21,9 @@ colored_traceback.add_hook(always=True)
 class AtYourServiceRepoCollection:
     FSDIRS = [j.dirs.VARDIR, j.dirs.CODEDIR]
 
-    def __init__(self):
+    def __init__(self, loop):
         self.logger = j.logger.get('j.atyourservice.server')
-        self._loop = asyncio.get_event_loop()
+        self._loop = loop or asyncio.get_event_loop()
         self._repos = {}
         self._load()
 
@@ -163,29 +163,12 @@ class AtYourServiceRepo():
 
         self._loop = loop or asyncio.get_event_loop()
 
-        self._run_scheduler = None
-        self.__run_scheduler_task = None
-
-        try:
-            self._run_scheduler_task
-        except:
-            self.logger.warning("The scheduler for the ays repo {} didn't start, [known issue](https://github.com/Jumpscale/jumpscale_core8/issues/921)".format(self.name))
+        self.run_scheduler = RunScheduler(self)
+        self._run_scheduler_task = self._loop.create_task(self.run_scheduler.start())
 
         j.atyourservice.server._loadActionBase()
 
         self._load_services()
-
-    @property
-    def run_scheduler(self):
-        if self._run_scheduler is None:
-            self._run_scheduler = RunScheduler(self)
-        return self._run_scheduler
-
-    @property
-    def _run_scheduler_task(self):
-        if self.__run_scheduler_task is None:
-            self.__run_scheduler_task = self._loop.create_task(self.run_scheduler.start())
-        return self.__run_scheduler_task
 
     @property
     def db(self):

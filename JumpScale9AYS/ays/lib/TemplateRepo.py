@@ -43,9 +43,9 @@ class TemplateRepoCollection:
     """
     FSDIRS = [j.dirs.CODEDIR]
 
-    def __init__(self):
+    def __init__(self, loop):
+        self._loop = loop or asyncio.get_event_loop()
         self.logger = j.logger.get('j.atyourservice.server')
-        self._loop = asyncio.get_event_loop()  # TODO: question why do we need this
         self._template_repos = {}
         self._load()
 

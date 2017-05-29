@@ -119,8 +119,8 @@ class AtYourServiceFactory:
 
     def _start(self, loop=None):
         self.loop = loop or asyncio.get_event_loop()
-        self.templateRepos = TemplateRepoCollection()  # actor templates repositories
-        self.aysRepos = AtYourServiceRepoCollection()  # ays repositories
+        self.templateRepos = TemplateRepoCollection(loop=loop)  # actor templates repositories
+        self.aysRepos = AtYourServiceRepoCollection(loop=loop)  # ays repositories
         self.started = True
         t = threading.Thread(target=self._watch_repos)
         t.start()
