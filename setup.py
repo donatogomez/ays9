@@ -53,7 +53,7 @@ setup(
         'g8core>=1.0.0',  # is not ok, because strictly spoken this is not part of ays9
         'jsonschema>=2.6.0',
         'python-jose>=1.3.2',
-        'sanic>=0.5.2'
+        'sanic>=0.5.4'
     ],
     cmdclass={
         'install': install,
