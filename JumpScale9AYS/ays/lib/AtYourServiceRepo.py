@@ -286,7 +286,7 @@ class AtYourServiceRepo():
         elif len(actor_models) < 1:
             # checking if we have the actor on the file system
             actors_dir = j.sal.fs.joinPaths(self.path, 'actors')
-            results = j.sal.fs.walkExtended(actors_dir, files=False, dirPattern=name)
+            results = j.sal.fswalker.walkExtended(actors_dir, files=False, dirPattern=name)
             if len(results) == 1:
                 return Actor(aysrepo=self, name=name)
             elif die:

@@ -149,7 +149,7 @@ class Service:
         errors = []
         schema = j.data.capnp.getSchemaFromText(self.model.dbobj.dataSchema)
         for field in args:
-            normalizedfieldname = j.data.hrd.sanitize_key(field)
+            normalizedfieldname = j.data.text.sanitize_key(field)
             if normalizedfieldname not in schema.schema.fieldnames:
                 errors.append('- Invalid parameter [{field}] passed while creating {service}.\n'.format(
                     field=field,
@@ -271,7 +271,7 @@ class Service:
         """ Checks whether if args are the same as in instance model """
         data = j.data.serializer.json.loads(self.model.dataJSON)
         for key, value in args.items():
-            sanitized_key = j.data.hrd.sanitize_key(key)
+            sanitized_key = j.data.text.sanitize_key(key)
             if sanitized_key in data and data[sanitized_key] != value:
                 self.processChange(actor=actor, changeCategory="dataschema", args=args)
                 break

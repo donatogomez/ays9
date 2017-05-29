@@ -472,7 +472,7 @@ class Actor():
         # checking if we have the service on the file system
         target = "%s!%s" % (self.model.name, instance)
         services_dir = j.sal.fs.joinPaths(self.aysrepo.path, 'services')
-        results = j.sal.fs.walkExtended(services_dir, files=False, dirPattern=target)
+        results = j.sal.fswalker.walkExtended(services_dir, files=False, dirPattern=target)
         if len(results) > 1:
             raise j.exceptions.RuntimeError("found more then one service directory for %s" % target)
         elif len(results) == 1:

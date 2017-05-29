@@ -138,8 +138,8 @@ class Job:
         clean the logger handler from the job object so it doesn't make the job stays in memory
         """
         self.logger.removeHandler(self._logHandler)
-        jc_log_refs = j.logger.logging.manager.loggerDict['j.core.jobcontroller']
-        job_log_refs = j.logger.logging.manager.loggerDict['j.core.jobcontroller.job']
+        jc_log_refs = j.logger.logging.manager.loggerDict.get('j.core.jobcontroller', {})
+        job_log_refs = j.logger.logging.manager.loggerDict.get('j.core.jobcontroller.job', {})
 
         # Properly cleaning logger referernces in logging module to avoid memory leaks.
         jc_log_refs.loggerMap.pop(self.logger, None)
