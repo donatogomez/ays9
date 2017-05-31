@@ -111,10 +111,10 @@ class AtYourServiceRepoCollection:
                 "Directory %s already exists. Can't create AYS repo at the same location." % path)
 
         j.sal.fs.createDir(path)
+        j.tools.executorLocal.execute('cd {};git init'.format(path))
         j.sal.fs.createEmptyFile(j.sal.fs.joinPaths(path, '.ays'))
         j.sal.fs.createDir(j.sal.fs.joinPaths(path, 'actorTemplates'))
         j.sal.fs.createDir(j.sal.fs.joinPaths(path, 'blueprints'))
-        j.tools.executorLocal.execute('cd {};git init'.format(path))
         if git_url:
             j.tools.executorLocal.execute(
                 'cd {path};git remote add origin {url}'.format(path=path, url=git_url))
