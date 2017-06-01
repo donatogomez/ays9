@@ -182,7 +182,7 @@ class Actor():
         if parent:
             self.model.parentSet(role=parent['role'],
                                  auto=bool(parent['auto']),
-                                 optional=bool(parent['optional']),
+                                 optional=bool(parent.get('optional', False)),
                                  argname=parent.get('argname', parent['role'])
                                  )
 
