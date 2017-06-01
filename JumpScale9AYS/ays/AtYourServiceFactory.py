@@ -187,7 +187,11 @@ echo <the new value> > /proc/sys/fs/inotify/max_user_watches
             if not cfg:
                 cfg = {}
             if 'redis' not in cfg:
-                cfg.update({'redis': j.core.db.config_get('unixsocket')})
+                rediskwargs = j.core.db.config_get('unixsocket')
+                if not rediskwargs['unixsocket']:
+                    dbkwargs = j.core.db.connection_pool.connection_kwargs
+                    rediskwargs = {'host': dbkwargs['host'], 'port': dbkwargs['port']}
+                cfg.update({'redis': rediskwargs})
             self._config = cfg
         return self._config
 
