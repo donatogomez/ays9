@@ -59,6 +59,7 @@ def _execute_cb(job, future):
         job.model.dbobj.state = 'ok'
         if service_action_obj:
             service_action_obj.state = 'ok'
+            service_action_obj.errorNr = 0
         if job.service:
             job.service.model.dbobj.state = 'ok'
 
