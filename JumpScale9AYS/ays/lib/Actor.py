@@ -118,8 +118,6 @@ class Actor():
         self._initEvents(template)
 
         repo = self.aysrepo
-        repo._db = None  # FORCE REPO TO RELOAD ACTORS
-        repo.db
         svs = repo.servicesFind(actor=self.model.name)
 
         if self.model.dbobj.serviceDataSchema != template.schemaCapnpText:
