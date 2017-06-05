@@ -107,6 +107,7 @@ class Actor():
 
     def update(self, reschedule=False):
         template = self.aysrepo.templateGet(self.model.dbobj.name)
+
         self._initParent(template)
         self._initProducers(template)
         self._initFlists(template)
@@ -116,11 +117,11 @@ class Actor():
         self._initTimeouts(template)
         self._initEvents(template)
 
-        # stop services recurring actions
         repo = self.aysrepo
+        repo._db = None  # FORCE REPO TO RELOAD ACTORS
+        repo.db
         svs = repo.servicesFind(actor=self.model.name)
 
-        # hrd schema to capnp
         if self.model.dbobj.serviceDataSchema != template.schemaCapnpText:
             self.model.dbobj.serviceDataSchema = template.schemaCapnpText
             self.processChange("dataschema")
@@ -129,10 +130,13 @@ class Actor():
             self.model.dbobj.dataUI = template.dataUI
             self.processChange("ui")
 
+        j.data.capnp.resetSchema(j.data.capnp.getId(template.schemaCapnpText))
+
         self.saveToFS()
         self.model.save()
-
         for s in svs:
+            # should we keep the old schema of all service or update them??
+            # s.model.dbobj.serviceDataSchema = template.schemaCapnpText
             dirtyservice = False
             for action in self.model.dbobj.actions:
                 if action.period > 0:
