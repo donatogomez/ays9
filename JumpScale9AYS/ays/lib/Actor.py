@@ -128,10 +128,9 @@ class Actor():
             self.model.dbobj.dataUI = template.dataUI
             self.processChange("ui")
 
-        j.data.capnp.resetSchema(j.data.capnp.getId(template.schemaCapnpText))
-
         self.saveToFS()
         self.model.save()
+
         for s in svs:
             # should we keep the old schema of all service or update them??
             # s.model.dbobj.serviceDataSchema = template.schemaCapnpText

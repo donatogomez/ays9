@@ -150,6 +150,8 @@ class Service:
         # actor might be update so use the schema from the actor not the one stored in the service.
         template = self.aysrepo.templateGet(self.model.dbobj.actorName)
 
+        j.data.capnp.resetSchema(j.data.capnp.getId(template.schemaCapnpText))
+
         schema = j.data.capnp.getSchemaFromText(template.schemaCapnpText)
         for field in args:
             normalizedfieldname = j.data.text.sanitize_key(field)
