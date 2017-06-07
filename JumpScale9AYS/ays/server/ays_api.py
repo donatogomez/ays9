@@ -580,11 +580,21 @@ async def listServicesByRole(request, role, repository):
     parent = request.args.get('parent', '')
     fields = request.args.get('fields', '')
 
+    consumed_service = request.args.get('consume', '')
+    flatten = lambda l: [item for sublist in l for item in sublist]
+
     fields = [field.strip() for field in fields.split(',') if field.strip()]
     result = list()
-
+    if consumed_service:
+        consumed_service = "service:{}".format(consumed_service)
     for s in repo.servicesFind(role=role, parent=parent):
         data = {'role': s.model.role, 'name': s.model.name, 'data':dict()}
+        if consumed_service:
+            allproducer_services_lists = s.producers.values()
+            all_svs = list(map(str, flatten(allproducer_services_lists)))
+            if consumed_service not in all_svs:
+                continue
+
         for field in fields:
             if not hasattr(s.model.data, field):
                 return json('No such field "{}" in service "{}" data'.format(field, s), 400)
