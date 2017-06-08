@@ -147,10 +147,11 @@ class Service:
         validate the arguments passed to the service during initialization to be sure we don't pass not defined arguments.
         """
         errors = []
+        schema = j.data.capnp.getSchemaFromText(self.model.dbobj.dataSchema)
 
         for field in args:
             normalizedfieldname = j.data.text.sanitize_key(field)
-            if normalizedfieldname not in self.model.data.schema.fieldnames:
+            if normalizedfieldname not in schema.schema.fieldnames:
                 errors.append('- Invalid parameter [{field}] passed while creating {service}.\n'.format(
                     field=field,
                     service="%s!%s" % (self.model.role, self.model.dbobj.name)))
