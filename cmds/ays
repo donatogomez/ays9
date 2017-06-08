@@ -263,7 +263,8 @@ def show(role, name):
 @service.command()
 @click.option('--role', '-r', default="", help='optional role of the service')
 @click.option('--name', '-n', default="", help='optional name of the service')
-def state(role, name):
+@click.option('--state', '-s', default="", help='display all service actions that have the specified state')
+def state(role, name, state):
     """
     Print the state of the selected services. If not role or instances specified, all services from the repository are selected
     """
@@ -275,6 +276,13 @@ def state(role, name):
             print("Error while getting service: {}".format(_extract_error(e)))
             return
 
+    def filter_service(service):
+        if role and service['role'] != role:
+            return False
+        if name and service['name'] != name:
+            return False
+        return True
+
     try:
         resp = ayscl.api.ays.listServices(_current_repo_name())
     except Exception as e:
@@ -283,16 +291,20 @@ def state(role, name):
 
     services = resp.json()
     services = sorted(services, key=lambda s: s['role'])
-    for service in services:
-        if role and service['role'] != role:
-            continue
-        if name and service['name'] != name:
-            continue
 
-        print('State of service : %s!%s' % (service['role'], service['name']))
+    for service in filter(filter_service, services):
         service = get_service(service['role'], service['name'])
-        for action in service['actions']:
-            print("\t%-25s : %s" % (action['name'], action['state']))
+        if state:
+            for action in service['actions']:
+                if action['state'] == state:
+                    msg = "service: {}!{} action: {} state: {}".format(
+                        service['role'], service['name'], action['name'], action['state']
+                    )
+                    print(msg)
+        else:
+            print('State of service : %s!%s' % (service['role'], service['name']))
+            for action in service['actions']:
+                print("\t%-25s : %s" % (action['name'], action['state']))
 
 
 @service.command()
@@ -449,7 +461,7 @@ def _print_run(run, logs=False):
         return " {datetime} {category}: {log}\n".format(**log, datetime=print_date(log['epoch']))
 
     out = io.StringIO()
-    out.write(click.style("RUN:{}\n".format(run['key']), fg='green', underline=True))
+    out.write(click.style("RUN:{} ({})\n".format(run['key'], run['state']), fg='green', underline=True))
     # out.write(click.style("-------\n", fg='green'))
     for step in run['steps']:
         # out.write(click.style("## step:{}\n\n".format(step['number']), fg='green'))
@@ -522,11 +534,9 @@ def create(assume_yes, force, debug, profile, follow):
             j.tools.console.cls()
             print("Current state of the run:\n")
             _print_run(run)
-            running = False
-            for step in resp.json()['steps']:
-                for job in step['jobs']:
-                    if job['state'] == 'running':
-                        running = True
+
+            running = resp.json()['state'] not in ['ok', 'error']
+
             if running:
                 time.sleep(2)
 
@@ -550,12 +560,14 @@ def list():
 @run.command()
 @click.option('--key', '-k', default=None, help='key of the run to show')
 @click.option('--logs', '-l', default=False, is_flag=True, help='show logs of the jobs')
-def show(key, logs):
+@click.option('--follow', '-f', is_flag=True, help='follow run execution')
+def show(key, logs, follow):
     """
     show detail of a run.
 
-    If the --key option is not given, show the detail of the last run.
-    if --logs option is given, also show the logs of each job.
+    If the --key option is not set, show the detail of the last run.
+    if --logs option is set, also show the logs of each job.
+    If -f option is set, the command will print the status of the run until it succeed.
     """
     if key is None:
         try:
@@ -576,7 +588,30 @@ def show(key, logs):
         print("Error during retreive of the run {}: {}".format(key, _extract_error(e)))
         return
 
-    _print_run(resp.json(), logs=logs)
+    run = resp.json()
+    if not follow:
+        _print_run(run, logs=logs)
+        return
+
+    running = True
+    while running:
+        try:
+            resp = ayscl.api.ays.getRun(runid=run['key'], repository=_current_repo_name())
+        except Exception as e:
+            print("Error during retreive of the run {}: {}".format(key, _extract_error(e)))
+            return
+
+        run = resp.json()
+        j.tools.console.cls()
+        now = j.data.time.epoch2pythonDateTime(j.data.time.epoch)
+        print("Current state of the run at {}:\n".format(now.strftime("%a %d %H:%M:%S %Y")))
+        _print_run(run)
+
+        running = run['state'] != 'ok'
+
+        if running:
+            time.sleep(2)
+
 
 
 @cli.command()
@@ -600,7 +635,7 @@ def blueprint(name):
     """
     if name == '':
         try:
-            resp = ayscl.api.ays.listBlueprints(_current_repo_name())
+            resp = ayscl.api.ays.listBlueprints(_current_repo_name(), query_params={'archived': False})
         except Exception as e:
             print("error during listing of blueprints: {}".format(_extract_error(e)))
             return
@@ -617,6 +652,43 @@ def blueprint(name):
         except Exception as e:
             print('error during execution of the blueprint {}: {}'.format(name, _extract_error(e)))
             return
+
+
+@cli.group()
+def scheduler():
+    """
+    Group of commands about run scheduler
+    """
+
+@scheduler.command()
+def status():
+    """
+    Display the status of the run scheduler and the number of run in the queue for the current repository
+    """
+    repo_name = _current_repo_name()
+    status_resp = ayscl.api.ays.getSchedulerStatus(repo_name)
+    current_resp = ayscl.api.ays.getCurrentRun(repo_name)
+
+    if current_resp.status_code == 204:
+        run = None
+    else:
+        run = current_resp.json()
+    info = status_resp.json()
+    msg = """
+Status: {status}
+Number of run waiting in the queue: {qsize}
+    """.format(repo=repo_name, status=info['status'], qsize=info['queueSize'])
+    if run:
+        msg += """
+Run currently executing:
+key: {key}
+status: {state}
+        """.format(**run)
+    else:
+        msg += "\nNo run currently executing"
+
+    print(msg)
+
 
 # AYS repository related group of commands
 @cli.command()
