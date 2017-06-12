@@ -5,7 +5,11 @@ First check status of the ZeroTier daemon:
 zerotier-cli info
 ```
 
-In case the ZeroTier daemon is not yet running, launch it:
+In case you get the error `zerotier-cli: missing port and zerotier-one.port not found in /var/lib/zerotier-one`, you first need
+
+In case the ZeroTier daemon is not yet running, you'll get following error: `zerotier-cli: missing port and zerotier-one.port not found in /var/lib/zerotier-one`
+
+In order to launch the ZeroTier daemon:
 ```shell
 zerotier-one -d
 ```

@@ -8,7 +8,14 @@ prefab = j.tools.prefab.local
 prefab.apps.portal.install()
 ```
 
-This will install and start the AYS Portal on port 8200: http://<ZeroTier IP Address of the container>:8200/
+This will install and start the AYS Portal on port 8200: http://localhost:8200/.
+
+In order to check that the portal runs, check the third window (CTRL+B 2) in the TMUX main session:
+```
+tmux at
+```
+
+@todo: In order to make sure that the portal is also remotely reachable, you'll need to update the IP address in `/optvar/cfg/portals/main/config.yaml`... 
 
 See `/optvar/cfg/portals/main/config.yaml` for configuring the AYS Portal:
 
