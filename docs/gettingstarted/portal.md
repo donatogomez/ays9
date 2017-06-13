@@ -2,24 +2,41 @@
 
 When using the JS9 Docker container, first make sure your container is joined to a ZeroTier network, as documented in [Join Your ZeroTier Network](zt.md).
 
-In the JumpScale interactive shell ('js9'):
+Then start the JumpScale interactive shell:
+```shell
+js9
+```
+
+In the JumpScale interactive shell ('js9') execute:
 ```python
 prefab = j.tools.prefab.local
 prefab.apps.portal.install()
 ```
 
-This will install and start the AYS Portal on port 8200: http://<ZeroTier IP Address of the container>:8200/
+This will install and start the AYS Portal on port 8200: http://localhost:8200/.
 
-See `/optvar/cfg/portals/main/config.yaml` for configuring the AYS Portal:
+When attaching to the main TMUX session, you'll see that two additional TMUX windows have been added, one for MongoDB and another one for the Portal:
+```
+tmux at
+```
+
+Use CTRL+B 1, 2 or 3 to toggle between the TMUX windows.
+
+In order to have to portal also available on the ZeroTier IP address, we'll need to update the portal configuration `/optvar/cfg/portals/main/config.yaml`.
+
+First stop the portal using CTRL+C in the third TMUX window (CTRL+B 2) and then update the value of `ipaddr` in `/optvar/cfg/portals/main/config.yaml` from `127.0.0.1` to `0.0.0.0`:
+
 
 ```bash
+vi /optvar/cfg/portals/main/config.yaml
+
 mongoengine.connection:
     host: 'localhost'
     port: 27017
 
 rootpasswd: 'admin'
 
-ipaddr: '127.0.0.1'
+ipaddr: '0.0.0.0'
 port: '8200'
 appdir: '$JSAPPSDIR/portals/portalbase'
 filesroot: '$VARDIR/portal/files'
@@ -45,4 +62,10 @@ oauth.organization: testOrg
 oauth.default_groups:
     - admin
     - user
+```
+
+Now restart the portal:
+```shell
+cd /opt/jumpscale9/apps/portals/main
+python3 portal_start.py
 ```

@@ -9,3 +9,5 @@ As a result a new TMUX session will start, attach to it:
 ```shell
 tmux at
 ```
+
+Next you will probably want to join you container into your ZeroTier network, as documented in [Join Your ZeroTier Network](zt.md).
