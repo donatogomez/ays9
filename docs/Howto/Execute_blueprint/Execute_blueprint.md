@@ -7,7 +7,7 @@ You can execute a blueprint in three ways:
 - [Using the AYS command line tool](#cli)
 - [Using the AYS RESTful API](#rest)
 - [Using the AYS Python client](#python)
-- [Using JumpScale client](#using-the-jumpScale-client)
+- [Using the JumpScale client](#using-the-jumpScale-client)
 - [Using the AYS Portal](#portal)
 
 
