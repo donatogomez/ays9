@@ -6,9 +6,10 @@ For creating a virtual datacenter (VDC) use the **vdc** actor template, availabl
 - [Full Blueprint](#full-blueprint)
 - [Values](#values)
 - [Example](#example)
-- [Using the AYS CLI tool](#cli)
+- [Using the AYS command line tool](#cli)
 - [Using the AYS RESTfull API](#rest)
-- [Using the Python client](#python)
+- [Using the AYS Python client](#python)
+- [Using JumpScale client](#using-the-jumpScale-client)
 - [Using the AYS Portal](#using-the-ays-portal)
 
 <a id="minimal-blueprint"></a>
@@ -129,7 +130,7 @@ actions:
 
 
 <a id="cli"></a>
-## Using the AYS CLI tool
+## Using the AYS command line tool
 
 You first need to create an AYS repository, as documented in [How to Create a New Repository](../Create_repository/Create_repository.md).
 
@@ -333,7 +334,7 @@ Next you will want to learn about one of the following :
 
 
 <a id="rest"></a>
-## Using the AYS REST API
+## Using the AYS RESTful API
 
 With the below command we make AYS listen on port 5000 on all interface:
 
@@ -523,18 +524,26 @@ curl -X POST \
 ```
 
 <a id="python"></a>
-## Using the Python client
+## Using the AYS Python client
 
-Install the Python client:
-```
-pip3 install aysclient
-```
+Make sure the Python client is installed, as documented in [Install the Python Client](../../gettingstarted/python.md)
 
 ```
 from aysclient.client import Client
 c=Client("http://172.17.0.2:5000")
 ```
 
-## Using the AYS Portal
+## Using the JumpScale client
 
 @todo
+
+```python
+cl = j.clients.atyourservice.get()
+cl.api.ays.listRepositories().json()
+cl.api.ays...
+```
+
+<a id="portal"></a>
+## Using the AYS Portal
+
+This requires a running instance of the AYS Portal, as documented in [Start the AYS Portal](../../gettingstarted/portal.md).

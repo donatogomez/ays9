@@ -4,13 +4,16 @@ Executing a blueprint means that you will initialize all service instances as de
 
 You can execute a blueprint in three ways:
 
-- [At the CLI](#cli)
+- [Using the AYS command line tool](#cli)
 - [Using the AYS RESTful API](#rest)
-- [In the AYS Portal](#portal)
+- [Using the AYS Python client](#python)
+- [Using JumpScale client](#using-the-jumpScale-client)
+- [Using the AYS Portal](#portal)
+
 
 
 <a id="cli"></a>
-## At the CLI
+## Using AYS command line tool
 
 Once you've created a new AYS repository, as documented in [How to Create a New Repository](../Create_repository/Create_repository.md), a new directory will have been created that contains two empty subdirectories:
 - `blueprints`
@@ -23,8 +26,6 @@ cd $REPO_NAME
 
 In order to execute a blueprint, you first need to create the blueprint, as documented in [How to Create Blueprints](../Create_blueprint/Create_blueprint.md).
 
-
-
 Once you add your first blueprint, and execute it, two more directories will be created:
 
 - `actors` containing the actor template files:
@@ -35,7 +36,6 @@ Once you add your first blueprint, and execute it, two more directories will be 
   - `data.json`: information of the AYS service, as set through the blueprint
   - `schema.capnp`: schema of the AYS service
   - `service.json`: the state of each of the actions
-
 
 
 <a id="rest"></a>
@@ -59,11 +59,32 @@ curl -H "Authorization: bearer JWT"  /
 
 > Note that once executed the user still is not created. One more step is required, that is executing the install action on the user1 service instance, as documented in the section [How to install a service](Install_service/Install_service.md).
 
-Also see the section about the [API Console](../../API_Console/API_Console.md)
 
+<a id="python"></a>
+## Using the AYS Python client
 
+Make sure the Python client is installed, as documented in [Install the Python Client](../../gettingstarted/python.md)
+
+```python
+from aysclient.client import Client
+cl = Client("http://<IP address of your AYS server>:5000")
+
+data={"name":"test_repo1", "git_url": "http://whatever"}
+
+cl.ays...
+```
+
+## Using the JumpScale client
+
+@todo
+
+```python
+cl = j.clients.atyourservice.get()
+cl.api.ays.listRepositories().json()
+cl.api.ays...
+```
 
 <a id="portal"></a>
 ## Using the AYS Portal
 
-See the [Getting started with blueprints](../../Getting_started_with_blueprints/Getting_started_with_blueprints.md) section.
+This requires a running instance of the AYS Portal, as documented in [Start the AYS Portal](../../gettingstarted/portal.md).

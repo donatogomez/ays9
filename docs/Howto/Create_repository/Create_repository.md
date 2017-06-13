@@ -2,15 +2,15 @@
 
 You can create an AYS repository in multiple ways:
 
-- [Using the AYS CLI tool](#cli)
+- [Using the AYS command line tool](#cli)
 - [Using the AYS Restful API](#rest)
-- [Using the Python Client](#python)
-- [Using JumpScale](#jumpscale)
+- [Using the Python client](#python)
+- [Using JumpScale client](#using-the-jumpScale-client)
 - [Using the AYS Portal](#portal)
 
 
 <a id="cli"></a>
-## Using the AYS CLI client
+## Using the AYS command line tool
 
 ```
 REPO_NAME="..."
@@ -37,7 +37,7 @@ See [How to Execute Blueprints](../Execute_blueprint/Execute_blueprint.md) for m
 <a id="rest"></a>
 ## Using the AYS RESTful API
 
-In order to use the AYS API you first need to obtain an JWT, as documented in the section about [how to get a JWT](../Get_JWT/Get_JWT.md).
+In order to use the AYS RESTful API you first might need to obtain a JWT, as documented in the section about [How to Get a JWT](../Get_JWT/Get_JWT.md).
 
 Once you got the JWT:
 
@@ -53,12 +53,6 @@ curl -H "Authorization: bearer $JWT" \
      https://$BASE_URL:$AYS_PORT/ays/repository
 ```
 
-In the **API Console**:
-
-![](create-repository.png)
-
-For more information about the **API Console** go to the section about the [API Console](../../API_Console/API_Console.md).
-
 
 <a id="python"></a>
 ## Using the Python client
@@ -69,26 +63,39 @@ Make sure the Python client is installed, as documented in [Install the Python C
 from aysclient.client import Client
 cl = Client("http://<IP address of your AYS server>:5000")
 
-data={"name":"test_repo1", "git_url": "http://whatever"}
+repo_name="test_repo1"
+git_url="http://whatever"
+
+data = {
+  "name": repo_name,
+  "git_url": git_url
+}
 
 cl.ays.createRepository(data)
 list=cl.ays.listRepositories()
 list.json()
 ```
 
-<a id="jumpscale"></a>
 ## Using the JumpScale client
 
 ```python
 cl = j.clients.atyourservice.get()
-cl.api.ays.listRepositories().json()
-cl.api.ays.createRepository()
-```
 
+repo_name="test_repo2"
+git_url="http://whatever"
+
+data = {
+  "name": repo_name,
+  "git_url": git_url
+}
+
+cl.api.ays.createRepository(data)
+cl.api.ays.listRepositories().json()
+```
 
 <a id="portal"></a>
 ## Using the AYS Portal
 
 This requires a running instance of the AYS Portal, as documented in [Start the AYS Portal](../../gettingstarted/portal.md).
 
-@todo
+![](create-repository.png)
