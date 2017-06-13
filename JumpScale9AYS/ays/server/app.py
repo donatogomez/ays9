@@ -9,7 +9,7 @@ app = Sanic(__name__)
 app.blueprint(ays_if)
 app.blueprint(webhooks_if)
 
-app.static('/apidocs', 'JumpScale9AYS/ays/server/apidocs/index.html')
+app.static('/apidocs', 'JumpScale9AYS/ays/server/apidocs/')
 app.static('/', 'JumpScale9AYS/ays/server/index.html')
 
 if __name__ == "__main__":
