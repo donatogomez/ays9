@@ -14,6 +14,3 @@ curl https://raw.githubusercontent.com/Jumpscale/developer/$GIGDEVELOPERBRANCH/j
 # build image
 source ~/.jsenv.sh
 js9_build -l
-
-# start/create the container
-js9_start
