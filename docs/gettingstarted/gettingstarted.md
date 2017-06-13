@@ -8,4 +8,4 @@ Optionally you might want to join your ZeroTier network, documented in [Join You
 
 In order to interact with AYS through the Python client you need to install the Python client on the remote machine, documented in [Install the Python client](python.md).
 
-You can also interact with AYS through the AYS Portal, once you have the Portal installed and started as documented in [Start the AYS Portal](ays-portal.md).
+You can also interact with AYS through the AYS Portal, once you have the Portal installed and started as documented in [Start the AYS Portal](portal.md).

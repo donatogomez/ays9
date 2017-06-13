@@ -89,6 +89,6 @@ cl.api.ays.createRepository()
 <a id="portal"></a>
 ## Using the AYS Portal
 
-This requires a running instance of the AYS Portal, as documented in [Start the AYS Portal](../../gettingstarted/ays-portal.md).
+This requires a running instance of the AYS Portal, as documented in [Start the AYS Portal](../../gettingstarted/portal.md).
 
 @todo
