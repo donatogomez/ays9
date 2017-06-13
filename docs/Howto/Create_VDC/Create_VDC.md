@@ -532,8 +532,7 @@ Make sure the Python client is installed, as documented in [Install the Python C
 from aysclient.client import Client
 cl=Client("http://<IP address of AYS server>:5000")
 
-
-blueprint = "g8client__cl:\n  url: 'be-gen-1.demo.greenitglobe.com'\n  login: 'api_user'\n  password: 'api12345'\n  account: 'Account of Yves'\nvdc__test_vdc1:\n  g8client: 'cl'\n  location: 'be-gen-1'\nactions:\n  - action: install"
+blueprint = "g8client__cl:\n  url: 'be-gen-1.demo.greenitglobe.com'\n  login: 'api_user'\n  password: '***'\n  account: 'Account of Yves'\nvdc__test_vdc1:\n  g8client: 'cl'\n  location: 'be-gen-1'\nactions:\n  - action: install"
 
 data = {'name': 'test.yaml', 'content':blueprint}
 
