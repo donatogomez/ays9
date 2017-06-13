@@ -19,4 +19,4 @@
     * [Delete a VDC](Howto/Delete_VDC/Delete_VDC.md)
     * [Granting User Access](Howto/Granting_user_access/Granting_user_access.md)
     * [Change VDC Resource Limits](Howto/Change_VDC_Resource_Limits/Change_VDC_Resource_Limits.md)
-    * [Create a Blueprints](Howto/Create_blueprint/Create_blueprint.md)
+    * [Create Blueprints](Howto/Create_blueprint/Create_blueprint.md)

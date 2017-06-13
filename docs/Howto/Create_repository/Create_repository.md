@@ -63,7 +63,18 @@ For more information about the **API Console** go to the section about the [API 
 <a id="python"></a>
 ## Using the Python client
 
-@todo
+Make sure the Python client is installed, as documented in [Install the Python Client](../../gettingstarted/python.md)
+
+```python
+from aysclient.client import Client
+cl = Client("http://<IP address of your AYS server>:5000")
+
+data={"name":"test_repo1", "git_url": "http://whatever"}
+
+cl.ays.createRepository(data)
+list=cl.ays.listRepositories()
+list.json()
+```
 
 <a id="jumpscale"></a>
 ## Using the JumpScale client
@@ -78,6 +89,6 @@ cl.api.ays.createRepository()
 <a id="portal"></a>
 ## Using the AYS Portal
 
-This requires a running instance of the AYS Portal, as documented in [Start the AYS Portal](../../gettingstarted/ays-portal.md).
+This requires a running instance of the AYS Portal, as documented in [Start the AYS Portal](../../gettingstarted/portal.md).
 
 @todo
