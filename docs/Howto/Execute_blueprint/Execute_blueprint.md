@@ -7,10 +7,8 @@ You can execute a blueprint in three ways:
 - [Using the AYS command line tool](#cli)
 - [Using the AYS RESTful API](#rest)
 - [Using the AYS Python client](#python)
-- [Using JumpScale client](#using-the-jumpScale-client)
+- [Using the JumpScale client](#using-the-jumpScale-client)
 - [Using the AYS Portal](#portal)
-
-
 
 <a id="cli"></a>
 ## Using AYS command line tool
@@ -69,19 +67,27 @@ Make sure the Python client is installed, as documented in [Install the Python C
 from aysclient.client import Client
 cl = Client("http://<IP address of your AYS server>:5000")
 
-data={"name":"test_repo1", "git_url": "http://whatever"}
+blueprint = "g8client__cl:\n  url: 'be-gen-1.demo.greenitglobe.com'\n  login: 'api_user'\n  password: '***'\n  account: 'Account of Yves'\nvdc__test_vdc1:\n  g8client: 'cl'\n  location: 'be-gen-1'\nactions:\n  - action: install"
 
-cl.ays...
+data = {'name': 'test.yaml', 'content':blueprint}
+
+rv = cl.ays.createBlueprint(data, "test_repo3")
+
+rv = cl.ays.executeBlueprint("", "test.yaml", "test_repo3")
+
+list = cl.ays.listServices("test_repo3")
+
+list.json()
+
 ```
 
 ## Using the JumpScale client
 
-@todo
-
+Same code as above, but access the client in `j.clients.atyourservice`:
 ```python
 cl = j.clients.atyourservice.get()
 cl.api.ays.listRepositories().json()
-cl.api.ays...
+...
 ```
 
 <a id="portal"></a>

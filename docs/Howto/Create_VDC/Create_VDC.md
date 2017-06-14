@@ -9,7 +9,7 @@ For creating a virtual datacenter (VDC) use the **vdc** actor template, availabl
 - [Using the AYS command line tool](#cli)
 - [Using the AYS RESTfull API](#rest)
 - [Using the AYS Python client](#python)
-- [Using JumpScale client](#using-the-jumpScale-client)
+- [Using the JumpScale client](#using-the-jumpScale-client)
 - [Using the AYS Portal](#using-the-ays-portal)
 
 <a id="minimal-blueprint"></a>
@@ -528,19 +528,44 @@ curl -X POST \
 
 Make sure the Python client is installed, as documented in [Install the Python Client](../../gettingstarted/python.md)
 
-```
+```python
 from aysclient.client import Client
-c=Client("http://172.17.0.2:5000")
+cl=Client("http://<IP address of AYS server>:5000")
+
+blueprint = "g8client__cl:\n  url: 'be-gen-1.demo.greenitglobe.com'\n  login: 'api_user'\n  password: '***'\n  account: 'Account of Yves'\nvdc__test_vdc1:\n  g8client: 'cl'\n  location: 'be-gen-1'\nactions:\n  - action: install"
+
+data = {'name': 'test.yaml', 'content':blueprint}
+
+rv = cl.ays.createBlueprint(data, "test_repo3")
+
+rv = cl.ays.executeBlueprint("", "test.yaml", "test_repo3")
+
+run = cl.ays.createRun("", "test_repo3")
+
+run.json()
+
+list = cl.ays.listRuns("test_repo3")
+
+list.json()
+
+run = cl.ays.getRun("20d13bd535a31b4b4af6c0985d1f61f8", "test_repo3")
+
+run.json()
 ```
 
 ## Using the JumpScale client
 
-@todo
+Same code as above,
 
 ```python
 cl = j.clients.atyourservice.get()
-cl.api.ays.listRepositories().json()
-cl.api.ays...
+
+list = cl.api.ays.listBlueprints("test_repo3")
+list.json()
+
+blueprint = cl.api.ays.getBlueprint("test.yaml", "test_repo3")
+blueprint.json()
+
 ```
 
 <a id="portal"></a>
