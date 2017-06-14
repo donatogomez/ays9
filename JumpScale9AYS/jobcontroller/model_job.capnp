@@ -111,6 +111,9 @@ struct Job {
 
   profile @17: Bool;
   profileData @18: Data;
+
+  # Token send in the execute run request
+  token @18 :Text;
 }
 
 #is one specific piece of code which can be executed

@@ -637,7 +637,7 @@ class AtYourServiceRepo():
 
         return result
 
-    def runCreate(self, to_execute, debug=False, profile=False):
+    def runCreate(self, to_execute, debug=False, profile=False, token=None):
         """
         Create a run from all the scheduled actions in the repository.
         """
@@ -663,6 +663,7 @@ class AtYourServiceRepo():
 
                 job.model.dbobj.profile = profile
                 job.model.dbobj.debug = profile if profile is True else debug
+                job.model.dbobj.token = token
 
                 job.save()
 
