@@ -11,9 +11,10 @@ In the JumpScale interactive shell ('js9') execute:
 ```python
 prefab = j.tools.prefab.local
 prefab.apps.portal.install()
+prefab.solutions.cockpit.install(ip="<Zero-Tier-IP-address>")
 ```
 
-This will install and start the AYS Portal on port 8200: http://localhost:8200/.
+This will install and start the AYS Portal on port 8200: http://<Zero-Tier-IP-address>:8200/.
 
 When attaching to the main TMUX session, you'll see that two additional TMUX windows have been added, one for MongoDB and another one for the Portal:
 ```
@@ -22,9 +23,9 @@ tmux at
 
 Use CTRL+B 1, 2 or 3 to toggle between the TMUX windows.
 
-In order to have to portal also available on the ZeroTier IP address, we'll need to update the portal configuration `/optvar/cfg/portals/main/config.yaml`.
+In order to change the IP address and port on which the portal is reachable or any other portal configuration we'll need to update the portal configuration `/optvar/cfg/portals/main/config.yaml`:
 
-First stop the portal using CTRL+C in the third TMUX window (CTRL+B 2) and then update the value of `ipaddr` in `/optvar/cfg/portals/main/config.yaml` from `127.0.0.1` to `0.0.0.0`:
+First stop the portal using CTRL+C in the third TMUX window (CTRL+B 2) and then update for instance the value of `ipaddr` and `port` in `/optvar/cfg/portals/main/config.yaml`:
 
 
 ```bash
