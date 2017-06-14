@@ -87,7 +87,6 @@ class AtYourServiceFactory:
         """
         start an ays service on your local platform
         """
-        j.clients.redis.start4core()
         try:
             sname = j.tools.prefab.local.tmux.getSessions()[0]
         except:
