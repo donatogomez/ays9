@@ -520,6 +520,8 @@ class AtYourServiceRepo():
                 raise j.exceptions.Input(bp.valid_msg)
             await bp.load(role=role, instance=instance)
         await self.init(role=role, instance=instance)
+        # Gets all process change job keys created after executing the blueprint, to make it possible to retrieve process change jobs information.
+        # Gets time before executing the blueprint and lists all jobs with processChange action and last modified date after that time.
         jobkeys = j.core.jobcontroller.db.jobs.list(action='processChange', fromEpoch=curr_time)
         print("blueprint done")
         return jobkeys

@@ -647,6 +647,7 @@ def blueprint(name, follow):
         names = [name]
 
     for name in sorted(names):
+        # Will print json response containing list of jobkeys and execution message if follow flag is used, otherwise only the message.
         try:
             resp = ayscl.api.ays.executeBlueprint(data=None, blueprint=name, repository=_current_repo_name())
             if follow:

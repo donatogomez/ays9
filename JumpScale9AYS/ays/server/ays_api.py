@@ -295,6 +295,7 @@ async def getJob(request, jobid, repository):
         return json({'error': e.message}, 404)
     jobs = repo.jobsList()
     jobobj = None
+    # Gets all jobs in repo and gets a job object from the specfied job id, if there is no match will return error message.
     for job in jobs:
         if job.key == jobid:
             jobobj = j.core.jobcontroller.db.jobs.get(jobid)
@@ -456,6 +457,7 @@ async def executeBlueprint(request, blueprint, repository):
         error_msg = "Error during execution of the blueprint:\n %s" % str(e)
         j.atyourservice.server.logger.exception(error_msg)
         return json({'error': str(e)}, 500)
+    # Returns json containing list of jobkeys in addition to the message. Will only return jobs with action process change.
     return json({'msg': 'Blueprint {} executed'.format(blueprint), 'processChangeJobs': jobkeys})
 
 

@@ -10,7 +10,9 @@ Usage: ays blueprint [OPTIONS] [NAME]
   blueprints found in $aysdir/blueprints will be processed
 
 Options:
-  --help  Show this message and exit.
+  -f, --follow  return ids of process change jobs
+  --help        Show this message and exit.
+
 ```
 
 The process that takes places is:
