@@ -99,6 +99,21 @@ def run_view(run):
     return obj
 
 
+def job_view(job):
+    view = {
+        'key': job.key,
+        'action_name': job.dbobj.actionName,
+        'actor': job.dbobj.actorName,
+        'service_key': job.dbobj.serviceKey,
+        'service_name': job.dbobj.serviceName,
+        'state': job.state,
+        'logs': []
+    }
+    for log in job.dbobj.logs:
+        view['logs'].append(log.to_dict())
+    return view
+
+
 def actor_view(a):
     """
     generate a dict that represent a service from a service object

@@ -627,8 +627,9 @@ def start(bind, port, log):
 
 
 @cli.command()
+@click.option('--follow', '-f', default=False, is_flag=True, help='return ids of process change jobs')
 @click.argument('name', default='')
-def blueprint(name):
+def blueprint(name, follow):
     """
     will process the blueprint(s) pointed by name
     if name is empty    then all blueprints found in $aysdir/blueprints will be processed
@@ -648,7 +649,10 @@ def blueprint(name):
     for name in sorted(names):
         try:
             resp = ayscl.api.ays.executeBlueprint(data=None, blueprint=name, repository=_current_repo_name())
-            print("blueprint {} executed".format(name))
+            if follow:
+                print(resp.json())
+            else:
+                print("Blueprint {} executed".format(name))
         except Exception as e:
             print('error during execution of the blueprint {}: {}'.format(name, _extract_error(e)))
             return

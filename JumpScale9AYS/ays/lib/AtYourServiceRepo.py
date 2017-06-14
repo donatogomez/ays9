@@ -503,6 +503,7 @@ class AtYourServiceRepo():
         return bps
 
     async def blueprintExecute(self, path="", content="", role="", instance=""):
+        curr_time = j.data.time.epoch
         if path == "" and content == "":
             for bp in self.blueprints:
                 if not bp.is_valid:
@@ -518,10 +519,10 @@ class AtYourServiceRepo():
                     "blueprint %s not executed because it doesn't have a valid format" % bp.path)
                 raise j.exceptions.Input(bp.valid_msg)
             await bp.load(role=role, instance=instance)
-
         await self.init(role=role, instance=instance)
-
+        jobkeys = j.core.jobcontroller.db.jobs.list(action='processChange', fromEpoch=curr_time)
         print("blueprint done")
+        return jobkeys
 
     def blueprintGet(self, bname):
         bpath = j.sal.fs.joinPaths(self.path, 'blueprints', bname)

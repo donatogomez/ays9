@@ -10,6 +10,7 @@ from JumpScale9AYS.ays.server.views import actor_view
 from JumpScale9AYS.ays.server.views import blueprint_view
 from JumpScale9AYS.ays.server.views import template_view
 from JumpScale9AYS.ays.server.views import repository_view
+from JumpScale9AYS.ays.server.views import job_view
 from js9 import j
 
 logger = j.logger.get('j.ays.sanic')
@@ -282,6 +283,27 @@ async def getRun(request, aysrun, repository):
     aysrun = aysrun_model.objectGet()
     return json(run_view(aysrun), 200)
 
+
+async def getJob(request, jobid, repository):
+    '''
+    Get a job
+    Handler for GET /ays/repository/<repository>/job<jobid>
+    '''
+    try:
+        repo = get_repo(repository)
+    except j.exceptions.NotFound as e:
+        return json({'error': e.message}, 404)
+    jobs = repo.jobsList()
+    jobobj = None
+    for job in jobs:
+        if job.key == jobid:
+            jobobj = j.core.jobcontroller.db.jobs.get(jobid)
+            break
+    if not jobobj:
+        return json({'error': 'no job with id %s found' % jobid}, 404)
+    return json(job_view(jobobj), 200)
+
+
 async def deleteRun(request, aysrun, repository):
     '''
     Delete an aysrun
@@ -412,7 +434,7 @@ async def executeBlueprint(request, blueprint, repository):
     try:
         repo = get_repo(repository)
     except j.exceptions.NotFound as e:
-        return json({'error':e.message}, 404)
+        return json({'error': e.message}, 404)
 
     blueprints = repo.blueprints
     for item in blueprints:
@@ -420,10 +442,10 @@ async def executeBlueprint(request, blueprint, repository):
             bp = item
             break
     else:
-        return json({'error':"No blueprint found with this name '{}'".format(blueprint)}, 404)
+        return json({'error': "No blueprint found with this name '{}'".format(blueprint)}, 404)
 
     try:
-        await repo.blueprintExecute(path=bp.path)
+        jobkeys = await repo.blueprintExecute(path=bp.path)
 
     except j.exceptions.Input as inputEx:
         error_msg = "Input Exception : \n %s" % str(inputEx)
@@ -434,8 +456,8 @@ async def executeBlueprint(request, blueprint, repository):
         error_msg = "Error during execution of the blueprint:\n %s" % str(e)
         j.atyourservice.server.logger.exception(error_msg)
         return json({'error': str(e)}, 500)
+    return json({'msg': 'Blueprint {} executed'.format(blueprint), 'processChangeJobs': jobkeys})
 
-    return json({'msg':'Blueprint {} executed'.format(blueprint)})
 
 async def updateBlueprint(request, blueprint, repository):
     '''

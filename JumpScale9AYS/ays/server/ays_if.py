@@ -127,6 +127,13 @@ class ays_repository_byrepository_destroyView(HTTPMethodView):
 
 ays_if.add_route(ays_repository_byrepository_destroyView.as_view(), '/ays/repository/<repository>/destroy')
 
+class ays_repository_byrepository_job_byjobidView(HTTPMethodView):
+
+    async def get(self, request, jobid, repository):
+        return await auth(request, ays_api.getJob(request, jobid, repository))
+
+ays_if.add_route(ays_repository_byrepository_job_byjobidView.as_view(), '/ays/repository/<repository>/job/<jobid>')
+
 class ays_repository_byrepository_serviceView(HTTPMethodView):
 
     async def get(self, request, repository):

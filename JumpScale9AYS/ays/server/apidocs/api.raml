@@ -450,7 +450,7 @@ types:
             description: Execute the blueprint
             responses:
               200:
-                description: blueprint executed
+                description: blueprint executed and if applicable list of processChange jobs IDs
               404:
                 description: blueprint not found
                 body:
@@ -732,6 +732,23 @@ types:
                       application/json:
                         type: Error
 
+      /job:
+        /{jobid}:
+          uriParameters:
+            jobid:
+              type: string
+          get:
+            displayName: getJob
+            description: Get a jobid
+            responses:
+              200:
+                body:
+                  application/json:
+                    type: Job
+              404:
+                body:
+                  application/json:
+                    type: Error
 
 
 /webhooks:
