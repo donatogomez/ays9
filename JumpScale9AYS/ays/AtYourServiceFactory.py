@@ -189,12 +189,8 @@ echo <the new value> > /proc/sys/fs/inotify/max_user_watches
 
     @property
     def config(self):
-        ayscfgpath = j.sal.fs.joinPaths(j.dirs.CFGDIR, "jumpscale", "ays.yaml")
-        cfg = None
         if self._config is None:
-            if j.sal.fs.exists(ayscfgpath):
-                #  cfg = j.application.config.get('ays')
-                cfg = j.data.serializer.yaml.load(ayscfgpath)
+            cfg = j.application.config.get('ays')
             if not cfg:
                 cfg = {}
             if 'redis' not in cfg:
