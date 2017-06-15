@@ -14,6 +14,8 @@ from requests.exceptions import HTTPError
 
 repo = None
 ayscl = j.clients.atyourservice.get()
+if 'JWT' in os.environ:
+    ayscl.set_auth_header('Bearer {}'.format(os.environ['JWT']))
 
 
 def _current_repo_name():
@@ -59,7 +61,6 @@ def repo():
     Group of commands about AYS repositories
     """
     pass
-
 
 @repo.command()
 @click.option('--name', '-n', default=None, help='name of the new AYS repo you want to create')
@@ -612,6 +613,26 @@ def show(key, logs, follow):
         if running:
             time.sleep(2)
 
+
+
+@cli.command()
+@click.option('--clientid', help='client_id')
+@click.option('--clientsecret', help='client_secret')
+@click.option('--organization', help='Organization')
+def generatetoken(clientid, clientsecret, organization):
+    import requests
+    params = {
+        'grant_type': 'client_credentials',
+        'client_id': clientid,
+        'client_secret': clientsecret,
+        'response_type': 'id_token',
+        'scope': 'user:memberof:{},offline_access'.format(organization)
+    }
+    url = 'https://itsyou.online/v1/oauth/access_token'
+    resp = requests.post(url, params=params)
+    resp.raise_for_status()
+    print("# Generated Token, please run to use in client:")
+    print("export JWT='{}'".format(resp.content.decode('utf8')))
 
 
 @cli.command()
