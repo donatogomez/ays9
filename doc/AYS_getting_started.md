@@ -77,3 +77,19 @@ title = "AYS Getting Started"
 date = "2017-04-08"
 tags = []
 ```
+
+## Request context
+In some situation you want to be able to access the context of a request within an action job.
+AYS allow to access this context on the job object received in the service actions.  
+For example, if you want to access the JWT token used to create a run:
+```python
+# this is an snippet from a service action
+def install(job):
+    jwt_token = job.context['token']
+    # ...
+```
+
+In the case you create a job from within another job, make sure you pass the context around:
+```python
+j.tools.async.wrappers.sync(service.executeAction('start', context=job.context))
+```
