@@ -37,9 +37,10 @@ def install(job):
             account.authorize_user(username=user)
 
     # Unauthorize users not in the schema
-    for user in authorized_users:
-        if user not in users:
-            account.unauthorize_user(username=user)
+    # THIS FUNCTIONALITY IS DISABLED UNTIL OVC DOESN'T REQUIRE USERS TO BE ADMIN
+    # for user in authorized_users:
+    #     if user not in users:
+    #         account.unauthorize_user(username=user)
 
     # update capacity incase acount already existed update it
     account.model['maxMemoryCapacity'] = service.model.data.maxMemoryCapacity

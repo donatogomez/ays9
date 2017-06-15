@@ -31,6 +31,9 @@ def configure_logger(level):
 @click.option('--log', '-l', default='info', help='set logging level (error, warning, info, debug)')
 @click.option('--dev', default=False, is_flag=True, help='enable development mode')
 def main(host, port, log, dev):
+    if not j.core.db:
+        j.clients.redis.start4core()
+        j.core.db = j.clients.redis.get4core()
     log = log.upper()
     if log not in ('ERROR', 'WARNING', 'INFO', 'DEBUG'):
         click.echo("logging level not valid", err=True)

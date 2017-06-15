@@ -8,7 +8,9 @@ from JumpScale9AYS.ays.lib.AtYourServiceTester import AtYourServiceTester
 import colored_traceback
 import os
 import sys
-import inotify.adapters
+from inotify.adapters import BaseTree, _DEFAULT_EPOLL_BLOCK_DURATION_S
+from inotify.calls import InotifyError
+import inotify.constants
 import threading
 if "." not in sys.path:
     sys.path.append(".")
@@ -19,7 +21,11 @@ import asyncio
 colored_traceback.add_hook(always=True)
 
 
-class AYSNotify(inotify.adapters.InotifyTrees):
+class AYSNotify(BaseTree):
+
+    def __init__(self, paths, mask=inotify.constants.IN_ALL_EVENTS, block_duration_s=_DEFAULT_EPOLL_BLOCK_DURATION_S):
+        super(AYSNotify, self).__init__(mask=mask, block_duration_s=block_duration_s)
+        self.__load_trees(paths)
 
     def event_gen(self):
         """This is a secondary generator that wraps the principal one, and
@@ -47,8 +53,8 @@ class AYSNotify(inotify.adapters.InotifyTrees):
         while q:
             current_path = q[0]
             del q[0]
-
-            if any(current_path.startswith(i.encode()) for i in '._'):
+            current_path_name = j.sal.fs.getBaseName(current_path.decode())
+            if current_path_name.startswith(('.', '_')):
                 continue
 
             self._i.add_watch(current_path, self._mask)
@@ -81,7 +87,6 @@ class AtYourServiceFactory:
         """
         start an ays service on your local platform
         """
-        j.clients.redis.start4core()
         try:
             sname = j.tools.prefab.local.tmux.getSessions()[0]
         except:
@@ -89,7 +94,8 @@ class AtYourServiceFactory:
         cmd = "cd {codedir}/github/jumpscale/ays9; python3 main.py --host {host} --port {port} --log {log}".format(
             codedir=j.dirs.CODEDIR, host=bind, port=port, log=log)
         print("Starting AtYourService server in a tmux session")
-        rc, out = j.tools.prefab.local.tmux.executeInScreen(sname, "ays", cmd, reset=True, wait=5)
+        # execute ays in tmux with wait=0 because of the check ok output with ays will never be true
+        rc, out = j.tools.prefab.local.tmux.executeInScreen(sname, "ays", cmd, reset=True, wait=0)
         if rc > 0:
             raise RuntimeError("Cannot start AYS service")
 
@@ -139,7 +145,7 @@ echo <the new value> > /proc/sys/fs/inotify/max_user_watches
         try:
             mask = inotify.constants.IN_MOVE | inotify.constants.IN_CREATE | inotify.constants.IN_DELETE
             i = AYSNotify([d.encode() for d in [j.dirs.VARDIR, j.dirs.CODEDIR]], mask=mask)
-        except inotify.calls.InotifyError as e:
+        except InotifyError as e:
                 self.logger.warn("inotify error %s" % e)
                 self.logger.error(error_message)
                 # TODO: fall back to reloading every 60 seconds
@@ -162,7 +168,7 @@ echo <the new value> > /proc/sys/fs/inotify/max_user_watches
                                 print(e)
                 else:
                     break
-            except inotify.calls.InotifyError as e:
+            except InotifyError as e:
                 self.logger.warn("inotify error %s" % e)
                 self.logger.error(error_message)
 

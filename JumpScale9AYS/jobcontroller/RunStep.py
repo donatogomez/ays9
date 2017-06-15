@@ -32,7 +32,7 @@ class RunStep:
             if job_model:
                 res.append(job_model.objectGet())
             else:
-                j.logger.log('No job found with key [%s]' % obj.key)
+                self.logger.info('No job found with key [%s]' % obj.key)
         return res
 
     def _fake_exec(self, job):
