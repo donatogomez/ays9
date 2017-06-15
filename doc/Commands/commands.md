@@ -7,6 +7,7 @@ Since the number of command available in the AYS CLI is quite important, we orga
  - run
  - service
  - template
+ - generatetoken
 
 Each groups has sub-commands. To inspect the available sub-commands of a groups do `ays group --help`.
 E.g:
@@ -33,6 +34,7 @@ the following commands show you the typical order in which you need to execute a
 - [blueprint](blueprint/blueprint.md) executes one or more blueprints, converting them into service instances
 - [service show](service/show.md) inspect the service that you created during the excuting of the blueprint.
 - [run create](run/create.md) creates jobs (runs) for the scheduled actions, and proposes to start the jobs, which then executes the actions
+- [generate token](generatetoken.md) Generate an Itsyou.online JWT token based on client_id and client_secret
 
 ## Extensive list of all commands
 - [actor](actor)  : Grouf of command about to actors.
