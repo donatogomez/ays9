@@ -255,8 +255,7 @@ async def createRun(request, repository):
 
     try:
         to_execute = repo.findScheduledActions()
-        context = {"token": extract_token(request)}
-        run = repo.runCreate(to_execute, context=context)
+        run = repo.runCreate(to_execute, context={"token": extract_token(request)})
         run.save()
         if not simulate:
             await repo.run_scheduler.add(run)
@@ -717,4 +716,4 @@ def extract_token(request):
         ss = auth_header.split(' ', 1)
         if len(ss) == 2:
             return ss[1]
-    return None
+    return ""
