@@ -37,7 +37,7 @@ class Blueprint:
             self.hash = j.data.hash.md5_string(self.content)
             self.is_valid, self.valid_msg = self._validate_format(self.models)
 
-    async def load(self, role="", instance=""):
+    async def load(self, role="", instance="", context=None):
         self.actions = []
         self.eventFilters = []
         for model in self.models:
@@ -150,7 +150,7 @@ class Blueprint:
                                                      actorname, level=1, source="", tags="", msgpub="")
                         actor = self.aysrepo.actorGet(actorname)
                         args = {} if item is None else item
-                        await actor.asyncServiceCreate(instance=bpinstance, args=args)
+                        await actor.asyncServiceCreate(instance=bpinstance, args=args, context=context)
 
         # first we had to make sure all services do exist, then we can add these properties
         for action_info in self.actions:

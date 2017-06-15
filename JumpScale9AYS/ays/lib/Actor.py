@@ -467,7 +467,7 @@ class Actor():
 
 # SERVICE
 
-    async def asyncServiceCreate(self, instance="main", args={}):
+    async def asyncServiceCreate(self, instance="main", args={}, context=None):
         instance = instance
         service = self.aysrepo.serviceGet(role=self.model.role, instance=instance, die=False)
         if service is not None:
@@ -483,15 +483,15 @@ class Actor():
         elif len(results) == 1:
             service = Service.init_from_fs(aysrepo=self.aysrepo, path=results[0])
         else:
-            service = await Service.init_from_actor(aysrepo=self.aysrepo, actor=self, name=instance, args=args)
+            service = await Service.init_from_actor(aysrepo=self.aysrepo, actor=self, name=instance, args=args, context=context)
 
         return service
 
-    def serviceCreate(self, instance='main', args={}):
+    def serviceCreate(self, instance='main', args={}, context=None):
         """
         same call as asyncServiceCreate but synchronous. we expose this so user can use this method in service actions.
         """
-        return j.tools.async.wrappers.sync(self.asyncServiceCreate(instance=instance, args=args))
+        return j.tools.async.wrappers.sync(self.asyncServiceCreate(instance=instance, args=args, context=context))
 
     @property
     def services(self):

@@ -19,10 +19,10 @@ class Service:
         self.logger = j.logger.get('j.atyourservice.server.service')
 
     @classmethod
-    async def init_from_actor(cls, aysrepo, actor, args, name):
+    async def init_from_actor(cls, aysrepo, actor, args, name, context=None):
         self = cls(aysrepo)
         try:
-            await self._initFromActor(actor=actor, args=args, name=name)
+            await self._initFromActor(actor=actor, args=args, name=name, context=context)
             self.aysrepo.db.services.services[self.model.key] = self
             self._ensure_recurring()
             return self
@@ -40,7 +40,7 @@ class Service:
         return self
 
     @classmethod
-    def init_from_fs(cls, aysrepo, path):
+    def init_from_fs(cls, aysrepo, path, context=None):
         self = cls(aysrepo=aysrepo)
         self._loadFromFS(path)
         self.aysrepo.db.services.services[self.model.key] = self
@@ -59,7 +59,7 @@ class Service:
             self._path = j.sal.fs.joinPaths(self.aysrepo.path, relpath)
         return self._path
 
-    async def _initFromActor(self, actor, name, args={}):
+    async def _initFromActor(self, actor, name, args={}, context=None):
 
         self.logger.info("init service %s from %s" % (name, actor.model.name))
         if j.data.types.string.check(actor):
@@ -109,7 +109,7 @@ class Service:
         del(msg)  # make sure we don't hold the memory
 
         # input will always happen in process
-        args2 = await self.input(args=args)
+        args2 = await self.input(args=args, context=context)
         if args2 is not None and j.data.types.dict.check(args2):
             args = args2
 
@@ -135,7 +135,7 @@ class Service:
         self.save()
         self.aysrepo.db.services.services[self.model.key] = self
 
-        await self.init()
+        await self.init(context=context)
 
         # need to do this manually cause execution of input method is a bit special.
         self.model.actions['input'].state = 'ok'
@@ -608,8 +608,11 @@ class Service:
         self.logger.debug("wait for all event jobs to complete")
         await asyncio.gather(*coros)
 
-    async def input(self, args={}):
+    async def input(self, args={}, context=None):
         job = self.getJob("input", args=args)
+        if context:
+            for k, v in context.items():
+                job.context[k] = v
         job._service = self
         job.saveService = False  # this is done to make sure we don't save the service at this point !!!
         args = await job.executeInProcess()
@@ -617,8 +620,11 @@ class Service:
         job.model.save()
         return args
 
-    async def init(self):
+    async def init(self, context=None):
         job = self.getJob(actionName="init")
+        if context:
+            for k, v in context.items():
+                job.context[k] = v
         await job.executeInProcess()
         job.model.save()
         return job

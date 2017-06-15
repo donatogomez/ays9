@@ -502,14 +502,14 @@ class AtYourServiceRepo():
         bps = sorted(bps, key=lambda bp: bp.name)
         return bps
 
-    async def blueprintExecute(self, path="", content="", role="", instance=""):
+    async def blueprintExecute(self, path="", content="", role="", instance="", context=None):
         if path == "" and content == "":
             for bp in self.blueprints:
                 if not bp.is_valid:
                     self.logger.warning(
                         "blueprint %s not executed because it doesn't have a valid format" % bp.path)
                     raise j.exceptions.Input(bp.valid_msg)
-                await bp.load(role=role, instance=instance)
+                await bp.load(role=role, instance=instance, context=context)
         else:
             bp = Blueprint(self, path=path, content=content)
             # self._blueprints[bp.path] = bp
@@ -517,9 +517,9 @@ class AtYourServiceRepo():
                 self.logger.warning(
                     "blueprint %s not executed because it doesn't have a valid format" % bp.path)
                 raise j.exceptions.Input(bp.valid_msg)
-            await bp.load(role=role, instance=instance)
+            await bp.load(role=role, instance=instance, context=context)
 
-        await self.init(role=role, instance=instance)
+        await self.init(role=role, instance=instance, context=context)
 
         print("blueprint done")
 
@@ -684,10 +684,10 @@ class AtYourServiceRepo():
         return run
 
 # ACTIONS
-    async def init(self, role="", instance="", hasAction="", includeDisabled=False, data=""):
+    async def init(self, role="", instance="", hasAction="", includeDisabled=False, data="", context=None):
         for service in self.servicesFind(name=instance, actor=r'%s(\..*)?' % role, hasAction=hasAction, includeDisabled=includeDisabled):
             self.logger.info('init service: %s' % service)
-            await service.init()
+            await service.init(context=context)
 
         print("init done")
 
