@@ -255,7 +255,8 @@ async def createRun(request, repository):
 
     try:
         to_execute = repo.findScheduledActions()
-        run = repo.runCreate(to_execute, token=extract_token(request))
+        context = {"token": extract_token(request)}
+        run = repo.runCreate(to_execute, context=context)
         run.save()
         if not simulate:
             await repo.run_scheduler.add(run)
