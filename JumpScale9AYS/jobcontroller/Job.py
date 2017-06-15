@@ -9,6 +9,7 @@ import asyncio
 import functools
 import logging
 import traceback
+from collections import MutableMapping
 
 
 colored_traceback.add_hook(always=True)
@@ -106,6 +107,42 @@ class JobHandler(logging.Handler):
         self._job_model.log(msg=record.getMessage(), level=record.levelno, category=category, epoch=int(record.created), tags='')
 
 
+class JobContext(MutableMapping):
+    def __init__(self, model):
+        self._dict = {}
+        for ctx in model.dbobj.context:
+            self._dict[ctx.key] = ctx.value
+
+    def __getitem__(self, key):
+        return self._dict.__getitem__(key)
+
+    def __setitem__(self, key, value):
+        if not isinstance(key, str):
+            raise TypeError("key can only be of type str")
+        if not isinstance(value, str):
+            raise TypeError("value can only be of type str")
+
+        self._dict.__setitem__(key, value)
+
+    def __delitem__(self, key):
+        return self._dict.__delitem__(key)
+
+    def __iter__(self):
+        return self._dict.__iter__()
+
+    def __len__(self):
+        return self._dict.__len__()
+
+    def __repr__(self):
+        return self._dict.__repr__()
+
+    def __str__(self):
+        return self._dict.__str__()
+
+    def keys(self):
+        return self._dict.keys()
+
+
 class Job:
     """
     is what needs to be done for 1 specific action for a service
@@ -113,6 +150,7 @@ class Job:
 
     def __init__(self, model):
         self.model = model
+        self.context = JobContext(model)
         self._cancelled = False
         self._action = None
         self._service = None
@@ -253,7 +291,17 @@ class Job:
         raise RuntimeError(errormsg)
 
     def save(self):
+        # fill the context list in capnp obj before save
+        self.model.dbobj.init('context', len(self.context))
+        i = 0
+        for k, v in self.context.items():
+            kv = self.model.dbobj.context[i]
+            kv.key = k
+            kv.value = v
+            i += 1
+
         self.model.save()
+
         if self.saveService and self.service is not None:
             if self.model.dbobj.actionName in self.service.model.actions:
                 service_action_obj = self.service.model.actions[self.model.dbobj.actionName]

@@ -1,4 +1,4 @@
-@0xc95b52bf39888c7e;
+@0xb6d407bcbd7a90e0;
 
 
 struct Command {
@@ -111,6 +111,13 @@ struct Job {
 
   profile @17: Bool;
   profileData @18: Data;
+
+  struct KV {
+      key @0 :Text;
+      value @1 :Text;
+  }
+  # This list can contains different context infromation relative to the request that created the job
+  context @19 :List(KV);
 }
 
 #is one specific piece of code which can be executed

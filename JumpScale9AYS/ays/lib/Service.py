@@ -666,11 +666,11 @@ class Service:
 
         self.saveAll()
 
-    async def executeAction(self, action, args={}):
+    async def executeAction(self, action, args={}, context=None):
         if action[-1] == "_":
             return self.executeActionService(action)
         else:
-            return await self.executeActionJob(action, args)
+            return await self.executeActionJob(action, args, context=context)
 
     def executeActionService(self, action, args={}):
         # execute an action in process without creating a job
@@ -684,7 +684,7 @@ class Service:
         res = eval(action)(service=self, args=args)
         return res
 
-    async def executeActionJob(self, actionName, args={}):
+    async def executeActionJob(self, actionName, args={}, context=None):
         """
         creates a job and execute the action names actionName
         @param actionName: name of the action to execute
@@ -693,7 +693,7 @@ class Service:
         @args type: dict
         @return: result of the action.
         """
-        job = self.getJob(actionName=actionName, args=args)
+        job = self.getJob(actionName=actionName, args=args, context=context)
 
         result = await job.execute()
         if isinstance(result, tuple) and len(result) == 3:
@@ -701,7 +701,7 @@ class Service:
         else:
             return result
 
-    def getJob(self, actionName, args={}):
+    def getJob(self, actionName, args={}, context=None):
         action = self.model.actions[actionName]
         jobobj = j.core.jobcontroller.db.jobs.new()
         jobobj.dbobj.repoKey = self.aysrepo.path
@@ -715,6 +715,9 @@ class Service:
         jobobj.args = args
         job = j.core.jobcontroller.newJobFromModel(jobobj)
         job.service = self
+        if context is not None:
+            for k, v in context.items():
+                job.context[k] = v
         return job
 
     def _build_actions_chain(self, action, ds=list(), parents=list(), dc=None):

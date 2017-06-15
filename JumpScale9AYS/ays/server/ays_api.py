@@ -255,7 +255,8 @@ async def createRun(request, repository):
 
     try:
         to_execute = repo.findScheduledActions()
-        run = repo.runCreate(to_execute)
+        context = {"token": extract_token(request)}
+        run = repo.runCreate(to_execute, context=context)
         run.save()
         if not simulate:
             await repo.run_scheduler.add(run)
@@ -708,3 +709,12 @@ def get_repo(name):
             return repo
 
     raise j.exceptions.NotFound("Repository {} doesn't exists".format(name))
+
+
+def extract_token(request):
+    auth_header = request.headers.get('Authorization', None)
+    if auth_header:
+        ss = auth_header.split(' ', 1)
+        if len(ss) == 2:
+            return ss[1]
+    return None
