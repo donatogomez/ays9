@@ -15,7 +15,7 @@ from requests.exceptions import HTTPError
 repo = None
 ayscl = j.clients.atyourservice.get()
 if 'JWT' in os.environ:
-    ayscl.set_auth_header('Bearer {}'.format(os.environ['JWT']))
+    ayscl.api.set_auth_header('Bearer {}'.format(os.environ['JWT']))
 
 
 def _current_repo_name():
