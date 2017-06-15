@@ -16,8 +16,9 @@ def _post_install(libname, libpath):
 
     j.do.execute("pip3 install git+https://github.com/gigforks/PyInotify")
 
-    j.tools.jsloader.generatePlugins()
-    j.tools.jsloader.copyPyLibs()
+    # j.tools.jsloader.generateJumpscalePlugins()
+    # j.tools.jsloader.copyPyLibs()
+    j.tools.jsloader.generate()
 
 
 class install(_install):
