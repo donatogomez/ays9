@@ -1,6 +1,6 @@
 # How to Create a VDC
 
-For creating a virtual datacenter (VDC) use the **vdc** actor template, available here: https://github.com/Jumpscale/ays_jumpscale8/tree/master/templates/ovc/vdc
+For creating a virtual datacenter (VDC) use the **vdc** template, available here: https://github.com/Jumpscale/ays_jumpscale8/tree/master/templates/ovc/vdc
 
 - [Minimal Blueprint](#minimal-blueprint)
 - [Full Blueprint](#full-blueprint)
@@ -8,14 +8,13 @@ For creating a virtual datacenter (VDC) use the **vdc** actor template, availabl
 - [Example](#example)
 - [Using the AYS command line tool](#cli)
 - [Using the AYS RESTfull API](#rest)
-- [Using the AYS Python client](#python)
-- [Using the JumpScale client](#using-the-jumpScale-client)
+- [Using the AYS Python client](#using-the-python-client)
+- [Using the JumpScale client](#using-the-jumpscale-client)
 - [Using the AYS Portal](#using-the-ays-portal)
 
-<a id="minimal-blueprint"></a>
 ## Minimal Blueprint
 
-```
+```yaml
 g8client__{environment}:
   url: '{url}'
   login: '{login}'
@@ -27,13 +26,21 @@ vdc__{vdc-name}:
   location: '{location}'
 
 actions:
-  - action: install    
+  - action: install  
 ```
 
-<a id="full-blueprint"></a>
+
 ## Full blueprint
 
-```
+The full blueprint includes additional sections for following AYS templates:
+- `uservdc` for creating and/or granting user access to accounts and/or the VDCs
+- `vdcfarm` for logically grouping VDCs, if omitted a default `vdcfarm` service will be created implicitly
+- `account` for setting account limitations and control access to this account
+  - If you only specify an `account` in the `g8client` section (and optionally in the `vdc`) section, thus not explicitly including any `account` sections in the blueprint, then an `account` service will be created implicitly with the specified account name
+  - Explicitly including an `account` section allows you to create a new account and/or grant and revoke user access to the specified account, for more details see [Create a New OpenvCloud Account](../Create_account/README.md) and [Manage Account User Access](../Manage_account_user_access/README.md)
+
+
+```yaml
 g8client__{environment}:
   url: '{url}'
   login: '{login}'
@@ -52,6 +59,17 @@ uservdc__{username2}:
 
 vdcfarm__{vdcfarm}:
 
+account__{account}:
+  description: '{description}'
+  g8client: '{environment}'
+  accountusers:
+    - {username1}
+    - {username2}
+  maxMemoryCapacity: {maxMemoryCapacity}
+  maxCPUCapacity: {maxCPUCapacity}
+  maxDiskCapacity: {maxDiskCapacity}
+  maxNumPublicIP: {maxNumPublicIP}
+
 vdc__{vdc-name}:
   description: '{description}'
   vdcfarm: '{vdcfarm}'
@@ -59,40 +77,41 @@ vdc__{vdc-name}:
   account: '{account}'
   location: '{location}'
   externalNetworkID: `{externalNetworkID}`
-
   uservdc:
     - `{username1}`
     - `{username2}`
-
   maxMemoryCapacity: {maxMemoryCapacity}
   maxCPUCapacity: {maxCPUCapacity}
   maxDiskCapacity: {maxDiskCapacity}
   maxNumPublicIP: {maxNumPublicIP}
 
 actions:
-  - action: install    
+  - action: install   
 ```
 
-<a id="values"></a>
 ## Values
 
-- `{environment}`: environment name for referencing elsewhere in the same blueprint or other blueprint in the repository
-- `{url}`: URL to to the G8 environment, e.g. `gig.demo.greenitglobe.com`
-- `{login}`: username on the targeted G8 environment
-- `{password}`: password for the username
-- `{account}`: account on the targeted G8 environment used for the S3 server
-- `{username1}` and `{username2}`: ItsYou.online usernames of the users that will get Admin access to the the VDC
-- `{email1}` and `{email1}`: email addresses of the users that will get Admin access
-- `{vdc-name}`: name of the VDC that will be created for the S3 server, and if a VDC with the specified name already exists then that VDC will be used
-- `{description}`:  optional description for the VDC
-- `{vdcfarm}`: optional name of the VDC Farm to logically group the VDC into a VDC farm; if not specified a new VDC farm will be created
+- `{environment}`: OpenvCloud environment name for referencing elsewhere in the same blueprint or other blueprint in the repository
+- `{url}`: URL to the environment, e.g. `gig.demo.greenitglobe.com`
+- `{login}`: username on the OpenvCloud user
+- `{password}`: password for the OpenvCloud user
+- `{account}`: OpenvCloud account name
+- `{username1}` and `{username2}`: ItsYou.online usernames
+- `{email1}` and `{email1}`: email addresses of the ItsYou.online users
+- `{vdc-name}`: name of the VDC that will be created, and if a VDC with the specified name already exists then that VDC will be used
+- `{description}`:  optional description for an account or VDC
+- `{vdcfarm}`: optional name of the VDC farm to logically group VDCs; if not specified a new VDC farm will be created
 - `{location}`: location where the VDC needs to be created
 - `{externalNetworkID}`: ID of the external network to which the VDC needs to get connected; of not specified then it will default to the first/default external network
-- `{maxMemoryCapacity}`: available memory in GB for all virtual machines in the VDC
-- `{maxCPUCapacity}`: total number of available virtual CPU core that can be used by the virtual machines in the VDC
-- `{maxDiskCapacity}`: available disk capacity in GiB for all virtual disks in the VDC
-- `{maxNumPublicIP}`: number of external IP addresses that can be used by the VDC
+- `{maxMemoryCapacity}`: available memory in GB for all virtual machines in the VDC or account
+- `{maxCPUCapacity}`: total number of available virtual CPU core that can be used by the virtual machines in the VDC or account
+- `{maxDiskCapacity}`: available disk capacity in GiB for all virtual disks in the VDC or account
+- `{maxNumPublicIP}`: number of external IP addresses that can be used by the VDC or account
 
+> Note that you can specify an account both in `g8client` and in `vdc`, you have basically 4 options:
+> - Specify the account only in `g8client`, this will implicitly create an `account` service with that name
+> - Specify the same account in both `g8client` and `vdc`
+> - Specify a different account in both `g8client` and `vdc`, allowing you to deploy the VDC in another account than the one specified in `g8client`, this of course requires that the user has access to both accounts
 
 Future attribute:
 - `allowedVMSizes`: listing all IDs of the VM sizes that are allowed in this cloud space
@@ -107,22 +126,21 @@ Return values:
 cloudspaceID = type:int default:0
 ...
 
-<a id="example"></a>
+
 ## Example
 
 Here's an example blueprint for creating a VDC:
 
 ```yaml
 g8client__cl:
-  url: 'uk-g8-1.demo.greenitglobe.com'
+  url: 'be-gen-1.demo.greenitglobe.com'
   login: '***'
   password: '***'
-  account: '***'
+  account: 'demo'
 
 vdc__myvdc:
   g8client: 'cl'
-  account: '***'
-  location: 'uk-g8-1'
+  location: 'be-gen-1'
 
 actions:
   - action: install
@@ -132,7 +150,7 @@ actions:
 <a id="cli"></a>
 ## Using the AYS command line tool
 
-You first need to create an AYS repository, as documented in [How to Create a New Repository](../Create_repository/Create_repository.md).
+You first need to create an AYS repository, as documented in [How to Create a New Repository](../Create_repository/README.md).
 
 Once created make the AYS directory of your repository the current directory:
 ```bash
@@ -328,9 +346,9 @@ ays blueprint actions.yaml
 
 Next you will want to learn about one of the following :
 - How to [Create a VDC using the AYS API](#api) in the next section here below
-- How to [Delete a VDC](../Delete_VDC/Delete_VDC.md)
-- How to [Grant User Access to a VDC](../Granting_user_access/Granting_user_access.md)
-- How to [Change VDC Resource Limits](../Change_VDC_Resource_Limits/Change_VDC_Resource_Limits.md)
+- How to [Delete a VDC](../Delete_VDC/README.md)
+- How to [Grant User Access to a VDC](..//README.md)
+- How to [Change VDC Resource Limits](../Change_VDC_Resource_Limits/README.md)
 
 
 <a id="rest"></a>
@@ -523,7 +541,7 @@ curl -X POST \
      http://$BASE_URL:$AYS_PORT/ays/repository/$REPO_NAME/aysrun | python -m json.tool
 ```
 
-<a id="python"></a>
+
 ## Using the AYS Python client
 
 Make sure the Python client is installed, as documented in [Install the Python Client](../../gettingstarted/python.md)
@@ -568,7 +586,6 @@ blueprint.json()
 
 ```
 
-<a id="portal"></a>
 ## Using the AYS Portal
 
 This requires a running instance of the AYS Portal, as documented in [Start the AYS Portal](../../gettingstarted/portal.md).

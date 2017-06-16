@@ -2,7 +2,7 @@
 
 Here below we discuss how to delete a VDC using the AYS CLI tool. The same can of course be achieved by directly interacting with the AYS API.
 
-For deleting (uninstalling) a virtual datacenter (VDC) use the **vdc** actor template, available here: https://github.com/Jumpscale/ays_jumpscale8/tree/master/templates/ovc/vdc
+For deleting (uninstalling) a virtual datacenter (VDC) use the **vdc** template, available here: https://github.com/Jumpscale/ays9/tree/master/templates/ovc/vdc
 
 In case the AYS service for the VDC you want to delete is already initialized in your AYS repository simply use the following blueprint in order to schedule a run of the `uninstall` action:
 

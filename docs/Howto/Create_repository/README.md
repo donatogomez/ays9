@@ -32,12 +32,12 @@ Once you add your first blueprint, and execute it, two more directories will be 
 - `actors`
 - `services`
 
-See [How to Execute Blueprints](../Execute_blueprint/Execute_blueprint.md) for more details on this.
+See [How to Execute Blueprints](../Execute_blueprint/README.md) for more details on this.
 
 <a id="rest"></a>
 ## Using the AYS RESTful API
 
-In order to use the AYS RESTful API you first might need to obtain a JWT, as documented in the section about [How to Get a JWT](../Get_JWT/Get_JWT.md).
+In order to use the AYS RESTful API you first might need to obtain a JWT, as documented in the section about [How to Get a JWT](../Get_JWT/README.md).
 
 Once you got the JWT:
 

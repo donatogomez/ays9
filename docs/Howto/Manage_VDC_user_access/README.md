@@ -1,8 +1,8 @@
-# How to Grant User Access to a VDC
+# How to Manage User Access of a VDC
 
-For granting a user access rights to a virtual datacenter (VDC) you will use a `vdc` blueprint, actually the same blueprint you use for creating a new VDC, as documented in [How to Create a VDC](../Create_VDC/Create_VDC.md).
+For granting a user access rights to a virtual datacenter (VDC) you will use a `vdc` blueprint, actually the same blueprint you use for creating a new VDC, as documented in [How to Create a VDC](../Create_VDC/README.md).
 
-The `vdc` blueprint is defined in the `vdc` AYS template, available here: https://github.com/Jumpscale/ays_jumpscale8/tree/master/templates/ovc/vdc
+The `vdc` blueprint is defined in the `vdc` AYS template, available here: https://github.com/Jumpscale/ays9/tree/master/templates/ovc/vdc
 
 Below we discuss:
 
@@ -51,18 +51,18 @@ After having executed the (first) blueprint AYS will notice that something chang
 
 
 Create a new repository:
-```
+```bash
 cd /optvar/cockpit-repos
 ays repo create -n testrepo -g http://somewhere
 ```
 
 First create a blueprint for a new VDC
-```
+```bash
 vi blueprints/vdc.yaml
 ```
 
 Here's the definition in one blueprint, including a `actions` section:
-```
+```yaml
 g8client__gen:
     url: 'du-conv-2.demo.greenitglobe.com'
     login: '****'
@@ -78,26 +78,26 @@ actions:
 ```
 
 Execute the blueprint:
-```
+```bash
 ays blueprint vdc.yaml
 ```
 
 This will create the `testvdc` service with the state of its `install` action set to scheduled.
 
 In order to actually run the `install` action you create a run:
-```
+```bash
 ays run create
 ```
 
-Now let's create a blueprint to create service for an existing OpenvCloud user. For a user new user, check first the section [How to Create a New OpenvCloud User](../Add_user/Add_user.md):
+Now let's create a blueprint to create service for an existing OpenvCloud user. For a user new user, check first the section [How to Create a New OpenvCloud User](../Add_user/README.md):
 
-```
+```bash
 vi blueprints/testuser.yaml
 ```
 
 Here's the blueprint:
 
-```
+```yaml
 uservdc__testuser:
   g8client: gen
   provider: 'itsyouonline'
@@ -106,24 +106,24 @@ uservdc__testuser:
 Since this is for an existing user, you don't need to specify any actions.
 
 Execute this blueprint:
-```
+```bash
 ays blueprint testuser.yaml
 ```
 
 For granting this testuser access to the VDC you created earlier we create a new blueprint:
-```
+```bash
 vi blueprints/grantaccess.yaml
 ```
 
 Here's the blueprint:
-```
+```yaml
 vdc__testvdc:
   uservdc:
     - testuser
 ```
 
 Execute this blueprint:
-```
+```bash
 ays blueprint grantaccess.yaml
 ```
 

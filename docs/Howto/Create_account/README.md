@@ -1,11 +1,10 @@
 # Create a New OpenvCloud Account
 
-For creating an account use the **account** actor template, available here: https://github.com/Jumpscale/ays_jumpscale8/tree/master/templates/ovc/account
-
+For creating an account use the **account** template, available here: https://github.com/Jumpscale/ays9/tree/master/templates/ovc/account
 
 **Minimal blueprint**:
 
-```
+```yaml
 g8client__{environment}:
   url: '{url}'
   jwt: '{jwt}'
@@ -23,7 +22,7 @@ actions:
 
 **Full blueprint**:
 
-```
+```yaml
 g8client__{environment}:
   url: '{url}'
   jwt: '{jwt}'

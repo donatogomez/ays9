@@ -1,4 +1,4 @@
-# How to Create Blueprints
+# How to Create a Blueprint
 
 You can create a blueprint in multiple ways:
 
@@ -15,9 +15,9 @@ Make sure to validate your blueprint first to have valid YAML format using a too
 <a id="cli"></a>
 ## Using the AYS command line tool
 
-In order to creating a blueprint you need to have repository, creating repositories is discussed in [How to Create Repositories](../Create_repository/Create_repository.md).
+In order to creating a blueprint you need to have repository, creating repositories is discussed in [How to Create Repositories](../Create_repository/README.md).
 
-```
+```bash
 vi blueprints/blueprint.yaml
 ```
 
@@ -26,11 +26,11 @@ vi blueprints/blueprint.yaml
 
 @todo needs review
 
-In order to use the AYS RESTful API you first need to obtain an JWT, as documented in the section about [how to get a JWT](../Get_JWT/Get_JWT.md).
+In order to use the AYS RESTful API you first need to obtain an JWT, as documented in the section about [how to get a JWT](../Get_JWT/README.md).
 
 Once you got the JWT, you can create a blueprint, for instance here below for creating a new user "mike" on gig.demo.greenitglobe.com:
 
-```
+```bash
 curl -H "Authorization: bearer JWT"  /
      -H "Content-Type: application/json" /
      -d '{"name":"user1.yaml","content":"ovc_user__user1:\n  g8.client.name: 'gig'\n  username: 'mike'\n  email: 'mike@gmail.com'\n  provider: 'itsyouonline'"}'

@@ -1,4 +1,4 @@
-# How to Execute Blueprints
+# How to Execute a Blueprint
 
 Executing a blueprint means that you will initialize all service instances as described in the blueprint.
 
@@ -13,16 +13,16 @@ You can execute a blueprint in three ways:
 <a id="cli"></a>
 ## Using AYS command line tool
 
-Once you've created a new AYS repository, as documented in [How to Create a New Repository](../Create_repository/Create_repository.md), a new directory will have been created that contains two empty subdirectories:
+Once you've created a new AYS repository, as documented in [How to Create a New Repository](../Create_repository/README.md), a new directory will have been created that contains two empty subdirectories:
 - `blueprints`
 - `actorTemplates`
 
-```
+```bash
 REPO_NAME="..."
 cd $REPO_NAME
 ```
 
-In order to execute a blueprint, you first need to create the blueprint, as documented in [How to Create Blueprints](../Create_blueprint/Create_blueprint.md).
+In order to execute a blueprint, you first need to create the blueprint, as documented in [How to Create Blueprints](../Create_blueprint/README.md).
 
 Once you add your first blueprint, and execute it, two more directories will be created:
 
@@ -39,18 +39,18 @@ Once you add your first blueprint, and execute it, two more directories will be 
 <a id="rest"></a>
 ## Using the AYS RESTful API
 
-In order to use the AYS RESTful API you first need to obtain an JWT, as documented in the section about [how to get a JWT](../Get_JWT/Get_JWT.md).
+In order to use the AYS RESTful API you first need to obtain an JWT, as documented in the section about [how to get a JWT](../Get_JWT/README.md).
 
 Once you got the JWT, you can execute a blueprint:
 
-```
+```bash
 curl -H "Authorization: bearer JWT"  /  
      https://BASE_URL/api/ays/repository/REPOSITORY-NAME/blueprint/BLUEPRINT-NAME
 ```
 
-For instance in order to execute the blueprint discussed in the section [How to create a blueprint](../Create_blueprint/Create_blueprint.md):
+For instance in order to execute the blueprint discussed in the section [How to create a blueprint](../Create_blueprint/README.md):
 
-```
+```bash
 curl -H "Authorization: bearer JWT"  /  
      https://BASE_URL/api/ays/repository/REPOSITORY-NAME/blueprint/user1.yaml
 ```
