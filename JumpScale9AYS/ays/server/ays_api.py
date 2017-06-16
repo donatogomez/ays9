@@ -690,7 +690,7 @@ async def updateActor(request, name, repository):
         return json({'error': 'actor {} not found'.format(name)}, 404)
 
     reschedule = j.data.types.bool.fromString(request.args.get('reschedule', False))
-    actor.update(reschedule=reschedule)
+    actor.update(reschedule=reschedule, context={'token': extract_token(request)})
 
     return json(actor_view(actor), 200)
 

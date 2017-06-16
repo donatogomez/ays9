@@ -148,18 +148,18 @@ class Blueprint:
                         if not self.aysrepo.templateExists(actorname):
                             raise j.exceptions.Input(message="Cannot find actor:%s" %
                                                      actorname, level=1, source="", tags="", msgpub="")
-                        actor = self.aysrepo.actorGet(actorname)
+                        actor = self.aysrepo.actorGet(actorname, context=context)
                         args = {} if item is None else item
                         await actor.asyncServiceCreate(instance=bpinstance, args=args, context=context)
 
         # first we had to make sure all services do exist, then we can add these properties
         for action_info in self.actions:
-            for service in self.aysrepo.servicesFind(name=action_info['service'],actor=action_info['actor']):
+            for service in self.aysrepo.servicesFind(name=action_info['service'], actor=action_info['actor']):
                 service.scheduleAction(action_info['action_name'], period=action_info['recurring_period'], force=action_info['force'])
                 service.saveAll()
 
         for event_filter in self.eventFilters:
-            for service in self.aysrepo.servicesFind(name=action_info['service'],actor=action_info['actor']):
+            for service in self.aysrepo.servicesFind(name=action_info['service'], actor=action_info['actor']):
                 service.model.eventFilterSet(
                     channel=event_filter['channel'], actions=event_filter['action_name'],
                     command=event_filter['command'], secrets=event_filter['secret'])

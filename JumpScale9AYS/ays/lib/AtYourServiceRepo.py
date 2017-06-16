@@ -251,15 +251,15 @@ class AtYourServiceRepo():
         self.no_exec = False
 
 # ACTORS
-    def actorCreate(self, name):
+    def actorCreate(self, name, context=None):
         """
         will look for name inside & create actor from it
         """
         actorTemplate = self.templateGet(name)
-        actor = Actor(aysrepo=self, template=actorTemplate)
+        actor = Actor(aysrepo=self, template=actorTemplate, context=context)
         return actor
 
-    def actorGet(self, name, die=False):
+    def actorGet(self, name, die=False, context=None):
         actor_models = self.db.actors.find(name=name)
         if len(actor_models) == 1:
             obj = actor_models[0].objectGet(self)
@@ -271,12 +271,12 @@ class AtYourServiceRepo():
             actors_dir = j.sal.fs.joinPaths(self.path, 'actors')
             results = j.sal.fswalker.walkExtended(actors_dir, files=False, dirPattern=name)
             if len(results) == 1:
-                return Actor(aysrepo=self, name=name)
+                return Actor(aysrepo=self, name=name, context=context)
             elif die:
                 raise j.exceptions.NotFound(message="Could not find actor with name:%s" %
                                             name, level=1, source="", tags="", msgpub="")
 
-            obj = self.actorCreate(name)
+            obj = self.actorCreate(name, context=context)
             obj.saveAll()
         return obj
 

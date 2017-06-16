@@ -269,13 +269,13 @@ class Service:
 
         self.model.reSerialize()
 
-    def _check_args(self, actor, args):
+    def _check_args(self, actor, args, context=None):
         """ Checks whether if args are the same as in instance model """
         data = j.data.serializer.json.loads(self.model.dataJSON)
         for key, value in args.items():
             sanitized_key = j.data.text.sanitize_key(key)
             if sanitized_key in data and data[sanitized_key] != value:
-                self.processChange(actor=actor, changeCategory="dataschema", args=args)
+                self.processChange(actor=actor, changeCategory="dataschema", args=args, context=context)
                 break
 
     def _loadFromFS(self, path):
@@ -508,7 +508,7 @@ class Service:
                 return executor
         return j.tools.executor.getLocal()
 
-    def processChange(self, actor, changeCategory, args={}, reschedule=False):
+    def processChange(self, actor, changeCategory, args={}, reschedule=False, context=None):
         """
         template action change
         categories :
@@ -576,7 +576,7 @@ class Service:
         # execute the processChange method if it exists
         if 'processChange' in self.model.actions.keys():
             args.update({'changeCategory': changeCategory})
-            job = self.getJob("processChange", args=args)
+            job = self.getJob("processChange", args=args, context=context)
             args = job.executeInProcess()
             job.model.save()
 

@@ -2,13 +2,11 @@ from js9 import j
 from .Service import Service
 import capnp
 from JumpScale9AYS.ays.lib import model_capnp as ModelCapnp
-import capnp
-import msgpack
 
 
 class Actor():
 
-    def __init__(self, aysrepo, template=None, model=None, name=None):
+    def __init__(self, aysrepo, template=None, model=None, name=None, context=None):
         """
         init from a template or from a model
         """
@@ -19,7 +17,7 @@ class Actor():
         self.model = None
 
         if template is not None:
-            self._initFromTemplate(template)
+            self._initFromTemplate(template, context=context)
         elif model is not None:
             self.model = model
         elif name is not None:
@@ -105,14 +103,14 @@ class Actor():
         self.model.save()
         self.saveToFS()
 
-    def update(self, reschedule=False):
+    def update(self, reschedule=False, context=None):
         template = self.aysrepo.templateGet(self.model.dbobj.name)
 
         self._initParent(template)
         self._initProducers(template)
         self._initFlists(template)
 
-        self._processActionsFile(j.sal.fs.joinPaths(template.path, "actions.py"), reschedule=reschedule)
+        self._processActionsFile(j.sal.fs.joinPaths(template.path, "actions.py"), reschedule=reschedule, context=context)
         self._initRecurringActions(template)
         self._initTimeouts(template)
         self._initEvents(template)
@@ -127,12 +125,12 @@ class Actor():
                 service.model.dbobj.dataSchema = self.model.dbobj.serviceDataSchema
                 service.model._data = None  # force recreation of the capnp data object.
                 # no need to manually copy the data cause they are still in the service.model.dbobj.data
-                # setting _data to know force to recreate the capnp msg and fill it with content of service.model.dbobj.data
-            self.processChange("dataschema")
+                # setting _data to None force to recreate the capnp msg and fill it with content of service.model.dbobj.data
+            self.processChange("dataschema", context=context)
 
         if self.model.dbobj.dataUI != template.dataUI:
             self.model.dbobj.dataUI = template.dataUI
-            self.processChange("ui")
+            self.processChange("ui", context=context)
 
         self.saveToFS()
         self.model.save()
@@ -151,7 +149,7 @@ class Actor():
                 s.model.reSerialize()
                 s.saveAll()
 
-    def _initFromTemplate(self, template):
+    def _initFromTemplate(self, template, context=None):
         if self.model is None:
             self.model = self.aysrepo.db.actors.new()
             self.model.dbobj.name = template.name
@@ -171,7 +169,7 @@ class Actor():
         self._initProducers(template)
         self._initFlists(template)
 
-        self._processActionsFile(j.sal.fs.joinPaths(template.path, "actions.py"))
+        self._processActionsFile(j.sal.fs.joinPaths(template.path, "actions.py"), context=context)
         self._initRecurringActions(template)
         self._initTimeouts(template)
         self._initEvents(template)
@@ -245,7 +243,7 @@ class Actor():
             flist.path = dest
         flists.finish()
 
-    def _processActionsFile(self, path, reschedule=False):
+    def _processActionsFile(self, path, reschedule=False, context=None):
         def string_has_triple_quotes(s):
             return "'''" in s or '"""' in s
 
@@ -354,7 +352,7 @@ class Actor():
             self._addAction(actionName, amSource, amDecorator, amMethodArgs, amDoc)
 
         # check for removed actions in the actor
-        self._checkRemovedActions(parsedActorMethods)
+        self._checkRemovedActions(parsedActorMethods, context=context)
 
         if hasattr(self.model, 'list_actions'):
             actions_installed_names = [a.name for a in self.model.list_actions]
@@ -384,12 +382,12 @@ class Actor():
 
         # change if  we need to fire processChange jobs
         for action in self.model.dbobj.actions:
-            self._check_change(action, reschedule=reschedule)
+            self._check_change(action, reschedule=reschedule, context=context)
 
-    def _checkRemovedActions(self, parsedMethods):
+    def _checkRemovedActions(self, parsedMethods, context=None):
         for action in self.model.actionsSortedList:
             if action not in parsedMethods:
-                self.processChange('action_del_%s' % action)
+                self.processChange('action_del_%s' % action, context=context)
 
     def _addAction(self, actionName, amSource, amDecorator, amMethodArgs, amDoc):
 
@@ -416,17 +414,17 @@ class Actor():
             ac = j.core.jobcontroller.db.actions.get(key=ac.key)
         self.model.actionAdd(name=actionName, key=ac.key, isJob=('job' in amMethodArgs))
 
-    def _check_change(self, actionObj, reschedule=False):
+    def _check_change(self, actionObj, reschedule=False, context=None):
         """
         @param actionName = actionName
         @param action is the action object
         """
         if actionObj.state == "new":
-            self.processChange("action_new_%s" % actionObj.name, reschedule=reschedule)
+            self.processChange("action_new_%s" % actionObj.name, reschedule=reschedule, context=context)
         else:
-            self.processChange("action_mod_%s" % actionObj.name, reschedule=reschedule)
+            self.processChange("action_mod_%s" % actionObj.name, reschedule=reschedule, context=context)
 
-    def processChange(self, changeCategory, reschedule=False):
+    def processChange(self, changeCategory, reschedule=False, context=None):
         """
         template action change
         categories :
@@ -463,7 +461,7 @@ class Actor():
         self.saveAll()
 
         for service in self.aysrepo.servicesFind(actor=self.model.name):
-            service.processChange(actor=self, changeCategory=changeCategory, reschedule=reschedule)
+            service.processChange(actor=self, changeCategory=changeCategory, reschedule=reschedule, context=context)
 
 # SERVICE
 
@@ -471,7 +469,7 @@ class Actor():
         instance = instance
         service = self.aysrepo.serviceGet(role=self.model.role, instance=instance, die=False)
         if service is not None:
-            service._check_args(self, args)
+            service._check_args(self, args, context=context)
             return service
 
         # checking if we have the service on the file system
